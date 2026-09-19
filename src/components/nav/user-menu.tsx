@@ -5,6 +5,7 @@ import { LogOut, Settings, Upload, User as UserIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -31,9 +32,13 @@ export function UserMenu({ email }: { email: string | null }) {
       <DropdownMenuContent align="end" className="w-56">
         {email && (
           <>
-            <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
-              {email}
-            </DropdownMenuLabel>
+            {/* Base UI exige un <Menu.Group> autour de GroupLabel, même
+                sans radio group / regroupement fonctionnel derrière. */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+                {email}
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
           </>
         )}
