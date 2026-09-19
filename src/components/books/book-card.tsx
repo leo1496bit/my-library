@@ -35,6 +35,18 @@ export function BookCard({ book }: { book: BookWithRelations }) {
             <RatingStars value={book.rating} />
           </div>
         )}
+        {book.tags && book.tags.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {book.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-[11px] text-accent-foreground dark:text-accent"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );

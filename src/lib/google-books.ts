@@ -120,6 +120,35 @@ export async function searchBooksByTitle(
   return fetchVolumes(params);
 }
 
+// Recommandations : on préfère les éditions françaises (la bibliothèque de
+// l'utilisateur est en français), mais on complète avec l'édition d'origine
+// quand aucune traduction n'existe plutôt que de ne rien recommander.
+async function fetchVolumesPreferringFrench(
+  baseParams: URLSearchParams,
+  maxResults: number,
+): Promise<GoogleBookResult[]> {
+  const frenchParams = new URLSearchParams(baseParams);
+  frenchParams.set("langRestrict", "fr");
+  frenchParams.set("maxResults", String(maxResults));
+  const frenchResults = await fetchVolumes(frenchParams);
+
+  if (frenchResults.length >= maxResults) return frenchResults;
+
+  const fallbackParams = new URLSearchParams(baseParams);
+  fallbackParams.set("maxResults", String(maxResults));
+  const fallbackResults = await fetchVolumes(fallbackParams);
+
+  const seen = new Set(frenchResults.map((r) => r.googleBooksId));
+  const merged = [...frenchResults];
+  for (const r of fallbackResults) {
+    if (merged.length >= maxResults) break;
+    if (seen.has(r.googleBooksId)) continue;
+    seen.add(r.googleBooksId);
+    merged.push(r);
+  }
+  return merged;
+}
+
 export async function searchBooksByAuthor(
   author: string,
   maxResults = 10,
@@ -129,12 +158,11 @@ export async function searchBooksByAuthor(
 
   const params = new URLSearchParams({
     q: `inauthor:"${trimmed}"`,
-    maxResults: String(maxResults),
     printType: "books",
     orderBy: "relevance",
   });
 
-  return fetchVolumes(params);
+  return fetchVolumesPreferringFrench(params, maxResults);
 }
 
 export async function searchBooksBySubject(
@@ -146,10 +174,9 @@ export async function searchBooksBySubject(
 
   const params = new URLSearchParams({
     q: `subject:"${trimmed}"`,
-    maxResults: String(maxResults),
     printType: "books",
     orderBy: "relevance",
   });
 
-  return fetchVolumes(params);
+  return fetchVolumesPreferringFrench(params, maxResults);
 }
