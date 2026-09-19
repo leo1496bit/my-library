@@ -167,24 +167,33 @@ export function BookDetail({ id }: { id: string }) {
 
   async function handleDelete() {
     setDeleting(true);
-    const supabase = createClient();
-    // .select("id") permet de distinguer "aucune ligne trouvée/autorisée"
-    // (RLS ou id invalide) d'une vraie erreur réseau — sans ça, delete()
-    // renvoie un succès silencieux même quand rien n'a été supprimé.
-    const { data, error } = await supabase.from("books").delete().eq("id", id).select("id");
-    setDeleting(false);
+    try {
+      const supabase = createClient();
+      // .select("id") permet de distinguer "aucune ligne trouvée/autorisée"
+      // (RLS ou id invalide) d'une vraie erreur réseau — sans ça, delete()
+      // renvoie un succès silencieux même quand rien n'a été supprimé.
+      const { data, error } = await supabase.from("books").delete().eq("id", id).select("id");
 
-    if (error) {
-      toast.error("Suppression impossible. Réessayez.");
-      return;
+      if (error) {
+        console.error("handleDelete: supabase error", error);
+        toast.error(`Suppression impossible : ${error.message}`);
+        return;
+      }
+      if (!data || data.length === 0) {
+        toast.error("Ce livre est introuvable ou a déjà été supprimé.");
+        setDeleteOpen(false);
+        return;
+      }
+      toast.success("Livre supprimé.");
+      router.push("/library");
+    } catch (err) {
+      // Un rejet réseau/exception ici ne doit jamais laisser le bouton
+      // "planté" en silence — on veut toujours un retour visible.
+      console.error("handleDelete: unexpected exception", err);
+      toast.error("Une erreur inattendue est survenue. Réessayez.");
+    } finally {
+      setDeleting(false);
     }
-    if (!data || data.length === 0) {
-      toast.error("Ce livre est introuvable ou a déjà été supprimé.");
-      setDeleteOpen(false);
-      return;
-    }
-    toast.success("Livre supprimé.");
-    router.push("/library");
   }
 
   return (
@@ -201,7 +210,17 @@ export function BookDetail({ id }: { id: string }) {
             <MoreVertical className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem variant="destructive" onSelect={() => setDeleteOpen(true)}>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => {
+                // Laisse le menu déroulant terminer sa fermeture avant
+                // d'ouvrir la boîte de confirmation : ouvrir les deux en
+                // même temps peut laisser la page inerte (pointer-events
+                // bloqué par la fermeture du menu), rendant les boutons
+                // de la boîte de dialogue non cliquables.
+                setTimeout(() => setDeleteOpen(true), 150);
+              }}
+            >
               <Trash2 className="size-4" />
               Supprimer le livre
             </DropdownMenuItem>
