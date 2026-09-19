@@ -30,9 +30,7 @@ export interface BookActionState {
   book?: Book;
 }
 
-export async function addBookAction(
-  input: NewBookInput,
-): Promise<BookActionState> {
+export async function addBookAction(input: NewBookInput): Promise<BookActionState> {
   const parsed = newBookSchema.safeParse(input);
   if (!parsed.success) {
     const titleError = parsed.error.flatten().fieldErrors.title?.[0];

@@ -5,9 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/auth/confirm"];
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 // Rafraîchit la session Supabase à chaque requête et protège les routes

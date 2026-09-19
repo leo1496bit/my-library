@@ -38,7 +38,12 @@ export function RecommendationCard({
       <span className="flex h-56 w-40 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
         {recommendation.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={recommendation.coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img
+            src={recommendation.coverUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <BookText className="size-7 text-muted-foreground" strokeWidth={1.5} />
         )}

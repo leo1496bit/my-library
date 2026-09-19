@@ -23,9 +23,7 @@ export function BookCard({ book }: { book: BookWithRelations }) {
         <h3 className="truncate font-heading text-base leading-snug text-foreground">
           {book.title}
         </h3>
-        <p className="truncate text-sm text-muted-foreground">
-          {book.author ?? "Auteur inconnu"}
-        </p>
+        <p className="truncate text-sm text-muted-foreground">{book.author ?? "Auteur inconnu"}</p>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <StatusBadge status={book.status} />
           {book.active_loan && <LoanBadge />}

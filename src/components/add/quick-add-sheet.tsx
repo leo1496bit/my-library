@@ -153,9 +153,7 @@ export function QuickAddSheet() {
                 {trimmedQuery.length < 2 && (
                   <div className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
                     <BookText className="size-6" strokeWidth={1.5} />
-                    <p className="text-sm">
-                      Commencez à taper le titre du livre à ajouter.
-                    </p>
+                    <p className="text-sm">Commencez à taper le titre du livre à ajouter.</p>
                   </div>
                 )}
 
@@ -225,11 +223,7 @@ export function QuickAddSheet() {
                 <span className="flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
                   {selected.coverUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={selected.coverUrl}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
+                    <img src={selected.coverUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <BookText className="size-6 text-muted-foreground" strokeWidth={1.5} />
                   )}

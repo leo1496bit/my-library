@@ -1,13 +1,7 @@
 // Types partagés — reflètent le schéma Supabase défini dans
 // supabase/migrations/0001_init.sql.
 
-export const BOOK_STATUSES = [
-  "to_buy",
-  "to_read",
-  "reading",
-  "finished",
-  "abandoned",
-] as const;
+export const BOOK_STATUSES = ["to_buy", "to_read", "reading", "finished", "abandoned"] as const;
 
 export type BookStatus = (typeof BOOK_STATUSES)[number];
 

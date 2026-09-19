@@ -2,13 +2,7 @@ import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type BookStatus } from "@/lib/types";
 import { STATUS_BADGE_CLASSES } from "@/lib/status-styles";
 
-export function StatusBadge({
-  status,
-  className,
-}: {
-  status: BookStatus;
-  className?: string;
-}) {
+export function StatusBadge({ status, className }: { status: BookStatus; className?: string }) {
   return (
     <span
       className={cn(

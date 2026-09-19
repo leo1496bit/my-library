@@ -10,9 +10,7 @@ export function TopBar({ email }: { email: string | null }) {
           <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <BookMarked className="size-4" strokeWidth={1.75} />
           </span>
-          <span className="font-heading text-lg leading-none text-foreground">
-            Ma bibliothèque
-          </span>
+          <span className="font-heading text-lg leading-none text-foreground">Ma bibliothèque</span>
         </Link>
         <UserMenu email={email} />
       </div>

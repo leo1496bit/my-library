@@ -66,9 +66,7 @@ export async function GET() {
   }
 
   const ownedIsbns = new Set(books.map((b) => normalize(b.isbn)).filter(Boolean));
-  const ownedGoogleIds = new Set(
-    books.map((b) => b.google_books_id).filter(Boolean),
-  );
+  const ownedGoogleIds = new Set(books.map((b) => b.google_books_id).filter(Boolean));
   const ownedTitleAuthor = new Set(
     books.map((b) => `${normalize(b.title)}::${normalize(b.author)}`),
   );
@@ -76,11 +74,7 @@ export async function GET() {
   function isOwned(candidate: GoogleBookResult) {
     if (candidate.isbn && ownedIsbns.has(normalize(candidate.isbn))) return true;
     if (ownedGoogleIds.has(candidate.googleBooksId)) return true;
-    if (
-      ownedTitleAuthor.has(
-        `${normalize(candidate.title)}::${normalize(candidate.author)}`,
-      )
-    )
+    if (ownedTitleAuthor.has(`${normalize(candidate.title)}::${normalize(candidate.author)}`))
       return true;
     return false;
   }
@@ -103,12 +97,8 @@ export async function GET() {
       }
     }
 
-    topAuthors.forEach((author, i) =>
-      pushCandidates(byAuthor[i], `Du même auteur : ${author}`),
-    );
-    topGenres.forEach((genre, i) =>
-      pushCandidates(bySubject[i], `Dans le genre ${genre}`),
-    );
+    topAuthors.forEach((author, i) => pushCandidates(byAuthor[i], `Du même auteur : ${author}`));
+    topGenres.forEach((genre, i) => pushCandidates(bySubject[i], `Dans le genre ${genre}`));
 
     return NextResponse.json({
       recommendations: recommendations.slice(0, MAX_RECOMMENDATIONS),

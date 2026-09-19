@@ -16,7 +16,11 @@ export function RatingStars({
   const interactive = Boolean(onChange);
 
   return (
-    <div className="flex items-center gap-0.5" role={interactive ? "radiogroup" : undefined} aria-label="Note">
+    <div
+      className="flex items-center gap-0.5"
+      role={interactive ? "radiogroup" : undefined}
+      aria-label="Note"
+    >
       {[1, 2, 3, 4, 5].map((star) => {
         const filled = (value ?? 0) >= star;
         return (
