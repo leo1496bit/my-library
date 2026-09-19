@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BookText, ChevronLeft, MoreVertical, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { deleteBook, fetchBookDetail, updateBook } from "@/lib/data/books";
+import { markLoanReturned } from "@/lib/data/loans";
+import { NotFoundError } from "@/lib/data/errors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,11 +40,17 @@ import { TagEditor } from "@/components/books/tag-editor";
 import { LoanBadge } from "@/components/books/loan-badge";
 import { LoanDialog } from "@/components/loans/loan-dialog";
 import { formatDate } from "@/lib/format";
-import { FORMAT_LABELS, type Book, type BookFormat, type BookStatus, type Loan, type Tag } from "@/lib/types";
+import {
+  FORMAT_LABELS,
+  type Book,
+  type BookFormat,
+  type BookStatus,
+  type Loan,
+  type Tag,
+} from "@/lib/types";
 
 export function BookDetail({ id }: { id: string }) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [book, setBook] = useState<Book | null | "not-found">(null);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -54,29 +62,20 @@ export function BookDetail({ id }: { id: string }) {
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
-      const [{ data: b, error }, { data: l }, { data: bt }] = await Promise.all([
-        supabase.from("books").select("*").eq("id", id).single(),
-        supabase.from("loans").select("*").eq("book_id", id).order("loan_date", { ascending: false }),
-        supabase.from("book_tags").select("tags(*)").eq("book_id", id),
-      ]);
-
+    fetchBookDetail(id).then((data) => {
       if (cancelled) return;
-      if (error || !b) {
+      if (!data) {
         setBook("not-found");
         return;
       }
+      setBook(data.book);
+      setLoans(data.loans);
+      setTags(data.tags);
+    });
 
-      setBook(b as Book);
-      setLoans((l ?? []) as Loan[]);
-      setTags(((bt ?? []) as unknown as { tags: Tag }[]).map((row) => row.tags).filter(Boolean));
-    }
-
-    load();
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (book === null) {
@@ -109,39 +108,27 @@ export function BookDetail({ id }: { id: string }) {
   const pastLoans = loans.filter((l) => l.returned_at);
 
   async function saveField(field: keyof Book, value: string | number | null) {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("books")
-      .update({ [field]: value })
-      .eq("id", id)
-      .select()
-      .single();
-    if (error || !data) {
+    try {
+      const updated = await updateBook(id, { [field]: value });
+      setBook(updated);
+    } catch {
       toast.error("La modification n'a pas pu être enregistrée.");
-      return;
     }
-    setBook(data as Book);
   }
 
   async function handleStatusChange(status: BookStatus) {
     if (book === "not-found" || !book) return;
-    const previousStatus = book.status;
+    const previous = book;
     setBook({ ...book, status });
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("books")
-      .update({ status })
-      .eq("id", id)
-      .select()
-      .single();
-    if (error || !data) {
+    try {
+      const updated = await updateBook(id, { status });
+      setBook(updated);
+      if (status === "finished" && !updated.rating) {
+        toast.success("Livre marqué comme terminé — vous pouvez le noter ci-dessous.");
+      }
+    } catch {
       toast.error("Le changement de statut a échoué.");
-      setBook({ ...book, status: previousStatus });
-      return;
-    }
-    setBook(data as Book);
-    if (status === "finished" && !data.rating) {
-      toast.success("Livre marqué comme terminé — vous pouvez le noter ci-dessous.");
+      setBook(previous);
     }
   }
 
@@ -154,43 +141,35 @@ export function BookDetail({ id }: { id: string }) {
   }
 
   async function handleReturned(loan: Loan) {
-    const supabase = createClient();
-    const returnedAt = new Date().toISOString();
-    const { error } = await supabase.from("loans").update({ returned_at: returnedAt }).eq("id", loan.id);
-    if (error) {
+    const previous = loans;
+    const optimisticReturnedAt = new Date().toISOString();
+    setLoans((prev) =>
+      prev.map((l) => (l.id === loan.id ? { ...l, returned_at: optimisticReturnedAt } : l)),
+    );
+    try {
+      const updated = await markLoanReturned(loan.id);
+      setLoans((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+      toast.success("Marqué comme rendu.");
+    } catch {
       toast.error("Impossible de marquer ce prêt comme rendu.");
-      return;
+      setLoans(previous);
     }
-    setLoans((prev) => prev.map((l) => (l.id === loan.id ? { ...l, returned_at: returnedAt } : l)));
-    toast.success("Marqué comme rendu.");
   }
 
   async function handleDelete() {
     setDeleting(true);
     try {
-      const supabase = createClient();
-      // .select("id") permet de distinguer "aucune ligne trouvée/autorisée"
-      // (RLS ou id invalide) d'une vraie erreur réseau — sans ça, delete()
-      // renvoie un succès silencieux même quand rien n'a été supprimé.
-      const { data, error } = await supabase.from("books").delete().eq("id", id).select("id");
-
-      if (error) {
-        console.error("handleDelete: supabase error", error);
-        toast.error(`Suppression impossible : ${error.message}`);
-        return;
-      }
-      if (!data || data.length === 0) {
-        toast.error("Ce livre est introuvable ou a déjà été supprimé.");
-        setDeleteOpen(false);
-        return;
-      }
+      await deleteBook(id);
       toast.success("Livre supprimé.");
       router.push("/library");
     } catch (err) {
       // Un rejet réseau/exception ici ne doit jamais laisser le bouton
       // "planté" en silence — on veut toujours un retour visible.
-      console.error("handleDelete: unexpected exception", err);
-      toast.error("Une erreur inattendue est survenue. Réessayez.");
+      const message = err instanceof Error ? err.message : "Une erreur inattendue est survenue.";
+      toast.error(message);
+      // "Introuvable" : pas la peine de réessayer, on ferme. Toute autre
+      // erreur (réseau, etc.) laisse la boîte ouverte pour un nouvel essai.
+      if (err instanceof NotFoundError) setDeleteOpen(false);
     } finally {
       setDeleting(false);
     }
@@ -241,7 +220,11 @@ export function BookDetail({ id }: { id: string }) {
           <input
             defaultValue={book.title}
             key={`title-${book.id}`}
-            onBlur={(e) => e.target.value.trim() && e.target.value !== book.title && saveField("title", e.target.value.trim())}
+            onBlur={(e) =>
+              e.target.value.trim() &&
+              e.target.value !== book.title &&
+              saveField("title", e.target.value.trim())
+            }
             className="font-heading text-xl leading-snug text-foreground outline-none"
             aria-label="Titre"
           />
@@ -249,7 +232,9 @@ export function BookDetail({ id }: { id: string }) {
             defaultValue={book.author ?? ""}
             key={`author-${book.id}`}
             placeholder="Auteur"
-            onBlur={(e) => e.target.value !== (book.author ?? "") && saveField("author", e.target.value || null)}
+            onBlur={(e) =>
+              e.target.value !== (book.author ?? "") && saveField("author", e.target.value || null)
+            }
             className="text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/60"
             aria-label="Auteur"
           />
@@ -279,7 +264,11 @@ export function BookDetail({ id }: { id: string }) {
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-foreground">Détails</h2>
         <div className="rounded-lg border border-border bg-card px-3">
-          <DetailField label="Genre" value={book.genre ?? ""} onCommit={(v) => saveField("genre", v || null)} />
+          <DetailField
+            label="Genre"
+            value={book.genre ?? ""}
+            onCommit={(v) => saveField("genre", v || null)}
+          />
           <DetailField
             label="Éditeur"
             value={book.publisher ?? ""}
@@ -297,7 +286,11 @@ export function BookDetail({ id }: { id: string }) {
             value={book.page_count?.toString() ?? ""}
             onCommit={(v) => saveField("page_count", v ? Number(v) : null)}
           />
-          <DetailField label="ISBN" value={book.isbn ?? ""} onCommit={(v) => saveField("isbn", v || null)} />
+          <DetailField
+            label="ISBN"
+            value={book.isbn ?? ""}
+            onCommit={(v) => saveField("isbn", v || null)}
+          />
           <DetailField
             label="Langue"
             value={book.language ?? ""}
@@ -339,7 +332,9 @@ export function BookDetail({ id }: { id: string }) {
           key={`notes-${book.id}`}
           placeholder="Vos impressions, citations à retenir…"
           rows={4}
-          onBlur={(e) => e.target.value !== (book.notes ?? "") && saveField("notes", e.target.value || null)}
+          onBlur={(e) =>
+            e.target.value !== (book.notes ?? "") && saveField("notes", e.target.value || null)
+          }
         />
       </section>
 

@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { createLoan } from "@/lib/data/loans";
 import { todayIso } from "@/lib/format";
 import type { Loan } from "@/lib/types";
 
@@ -43,29 +43,25 @@ export function LoanDialog({
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
-    const { data, error: dbError } = await supabase
-      .from("loans")
-      .insert({
+    let loan: Loan;
+    try {
+      loan = await createLoan({
         book_id: bookId,
         borrower_name: borrowerName.trim(),
         loan_date: loanDate,
         expected_return_date: expectedReturn || null,
-      })
-      .select()
-      .single();
-
-    setPending(false);
-
-    if (dbError || !data) {
+      });
+    } catch {
+      setPending(false);
       setError("Impossible d'enregistrer ce prêt.");
       return;
     }
 
+    setPending(false);
     setBorrowerName("");
     setExpectedReturn("");
     setLoanDate(todayIso());
-    onLoaned(data as Loan);
+    onLoaned(loan);
     onOpenChange(false);
   }
 
@@ -75,9 +71,7 @@ export function LoanDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Marquer comme prêté</DialogTitle>
-            <DialogDescription>
-              L&apos;emprunteur n&apos;a pas besoin de compte.
-            </DialogDescription>
+            <DialogDescription>L&apos;emprunteur n&apos;a pas besoin de compte.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
             <div className="flex flex-col gap-1.5">

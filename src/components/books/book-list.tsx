@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LibraryBig, SearchIcon, TagIcon } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { fetchBooksWithRelations } from "@/lib/data/books";
 import { useAddBookSheet } from "@/components/add/add-book-context";
 import { BookCard } from "@/components/books/book-card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BOOK_STATUSES, STATUS_LABELS, type BookWithRelations, type Tag } from "@/lib/types";
 
-const FILTERS = [{ value: "all", label: "Tous" }, ...BOOK_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))] as const;
+const FILTERS = [
+  { value: "all", label: "Tous" },
+  ...BOOK_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+] as const;
 
 export function BookList() {
   const { addedTick, openSheet } = useAddBookSheet();
@@ -21,37 +24,10 @@ export function BookList() {
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const supabase = createClient();
     let cancelled = false;
-
-    async function load() {
-      const [{ data: books }, { data: loans }, { data: bookTags }] = await Promise.all([
-        supabase.from("books").select("*").order("date_added", { ascending: false }),
-        supabase.from("loans").select("*").is("returned_at", null),
-        supabase.from("book_tags").select("book_id, tags(*)"),
-      ]);
-
-      if (cancelled) return;
-
-      const loanByBook = new Map((loans ?? []).map((l) => [l.book_id, l]));
-      const tagsByBook = new Map<string, Tag[]>();
-      for (const row of (bookTags ?? []) as unknown as { book_id: string; tags: Tag }[]) {
-        if (!row.tags) continue;
-        const list = tagsByBook.get(row.book_id) ?? [];
-        list.push(row.tags);
-        tagsByBook.set(row.book_id, list);
-      }
-
-      setBooks(
-        (books ?? []).map((b) => ({
-          ...b,
-          active_loan: loanByBook.get(b.id) ?? null,
-          tags: tagsByBook.get(b.id) ?? [],
-        })),
-      );
-    }
-
-    load();
+    fetchBooksWithRelations().then((data) => {
+      if (!cancelled) setBooks(data);
+    });
     return () => {
       cancelled = true;
     };
@@ -86,9 +62,7 @@ export function BookList() {
         if (!matchesAnySelected) return false;
       }
       if (!q) return true;
-      return (
-        b.title.toLowerCase().includes(q) || (b.author ?? "").toLowerCase().includes(q)
-      );
+      return b.title.toLowerCase().includes(q) || (b.author ?? "").toLowerCase().includes(q);
     });
   }, [books, filter, query, selectedTagIds]);
 

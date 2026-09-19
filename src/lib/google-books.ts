@@ -40,14 +40,14 @@ interface GoogleVolumeItem {
   };
 }
 
-function upgradeCoverUrl(url: string | undefined): string | null {
+export function upgradeCoverUrl(url: string | undefined): string | null {
   if (!url) return null;
   // Google renvoie du http:// et une petite taille par défaut ; on force
   // https et une résolution un peu plus grande pour la fiche livre.
   return url.replace(/^http:\/\//, "https://").replace("zoom=1", "zoom=2");
 }
 
-function extractIsbn(
+export function extractIsbn(
   identifiers: { type: string; identifier: string }[] | undefined,
 ): string | null {
   if (!identifiers?.length) return null;
@@ -57,7 +57,7 @@ function extractIsbn(
   return isbn10?.identifier ?? null;
 }
 
-function extractYear(publishedDate: string | undefined): number | null {
+export function extractYear(publishedDate: string | undefined): number | null {
   if (!publishedDate) return null;
   const match = publishedDate.match(/^\d{4}/);
   return match ? Number(match[0]) : null;
@@ -99,9 +99,7 @@ async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]
   const data = (await res.json()) as { items?: GoogleVolumeItem[] };
   if (!data.items?.length) return [];
 
-  return data.items
-    .map(mapVolume)
-    .filter((b): b is GoogleBookResult => b !== null);
+  return data.items.map(mapVolume).filter((b): b is GoogleBookResult => b !== null);
 }
 
 export async function searchBooksByTitle(
