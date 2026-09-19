@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookMarked, LibraryBig, LogIn, SearchIcon, TagIcon } from "lucide-react";
+import { BarChart3, BookMarked, LibraryBig, LogIn, SearchIcon, TagIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,9 +137,17 @@ export function PublicLibrary({
             </Link>
           )}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {books ? `${books.length} livre${books.length > 1 ? "s" : ""} · lecture seule` : "Chargement…"}
-        </p>
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {books ? `${books.length} livre${books.length > 1 ? "s" : ""} · lecture seule` : "Chargement…"}
+          </p>
+          <Link
+            href={`/u/${slug}/stats`}
+            className="flex items-center gap-1 text-xs text-accent-foreground underline underline-offset-4 dark:text-accent"
+          >
+            <BarChart3 className="size-3" /> Statistiques
+          </Link>
+        </div>
       </header>
 
       <div className="flex flex-1 flex-col gap-4 px-4 py-4">
@@ -222,6 +230,7 @@ export function PublicLibrary({
               <PublicBookCard
                 key={book.id}
                 book={book}
+                slug={slug}
                 canSuggest={Boolean(isAuthenticated)}
                 onSuggest={handleSuggest}
               />

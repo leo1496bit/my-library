@@ -1,4 +1,23 @@
-import { BOOK_FORMATS, BOOK_STATUSES, FORMAT_LABELS, STATUS_LABELS, type Book } from "@/lib/types";
+import {
+  BOOK_FORMATS,
+  BOOK_STATUSES,
+  FORMAT_LABELS,
+  STATUS_LABELS,
+  type BookFormat,
+  type BookStatus,
+} from "@/lib/types";
+
+// Sous-ensemble structurel utilisé par ces calculs — satisfait aussi bien
+// par `Book` (bibliothèque privée) que par `SharedBook` (partage public),
+// sans dépendre de champs privés (notes, location…).
+export interface StatsSourceBook {
+  status: BookStatus;
+  format: BookFormat;
+  author: string | null;
+  genre: string | null;
+  page_count: number | null;
+  date_finished: string | null;
+}
 
 export interface CountEntry {
   key: string;
@@ -6,7 +25,7 @@ export interface CountEntry {
   count: number;
 }
 
-export function countByStatus(books: Book[]): CountEntry[] {
+export function countByStatus(books: StatsSourceBook[]): CountEntry[] {
   return BOOK_STATUSES.map((status) => ({
     key: status,
     label: STATUS_LABELS[status],
@@ -14,7 +33,7 @@ export function countByStatus(books: Book[]): CountEntry[] {
   }));
 }
 
-export function countByFormat(books: Book[]): CountEntry[] {
+export function countByFormat(books: StatsSourceBook[]): CountEntry[] {
   return BOOK_FORMATS.map((format) => ({
     key: format,
     label: FORMAT_LABELS[format],
@@ -22,7 +41,7 @@ export function countByFormat(books: Book[]): CountEntry[] {
   }));
 }
 
-function topBy(books: Book[], field: "author" | "genre", limit: number): CountEntry[] {
+function topBy(books: StatsSourceBook[], field: "author" | "genre", limit: number): CountEntry[] {
   const counts = new Map<string, number>();
   for (const book of books) {
     const raw = book[field];
@@ -37,11 +56,11 @@ function topBy(books: Book[], field: "author" | "genre", limit: number): CountEn
     .map(([label, count]) => ({ key: label, label, count }));
 }
 
-export function topAuthors(books: Book[], limit = 6): CountEntry[] {
+export function topAuthors(books: StatsSourceBook[], limit = 6): CountEntry[] {
   return topBy(books, "author", limit);
 }
 
-export function topGenres(books: Book[], limit = 6): CountEntry[] {
+export function topGenres(books: StatsSourceBook[], limit = 6): CountEntry[] {
   return topBy(books, "genre", limit);
 }
 
@@ -52,7 +71,7 @@ export interface MonthlyCount {
 }
 
 /** Livres terminés par mois sur les `months` derniers mois (mois courant inclus). */
-export function finishedPerMonth(books: Book[], months = 12): MonthlyCount[] {
+export function finishedPerMonth(books: StatsSourceBook[], months = 12): MonthlyCount[] {
   const now = new Date();
   const buckets: MonthlyCount[] = [];
   for (let i = months - 1; i >= 0; i--) {
@@ -72,13 +91,13 @@ export function finishedPerMonth(books: Book[], months = 12): MonthlyCount[] {
   return buckets;
 }
 
-export function estimatedPagesRead(books: Book[]): number {
+export function estimatedPagesRead(books: StatsSourceBook[]): number {
   return books
     .filter((b) => b.status === "finished")
     .reduce((sum, b) => sum + (b.page_count ?? 0), 0);
 }
 
-export function finishedThisYear(books: Book[], year: number): number {
+export function finishedThisYear(books: StatsSourceBook[], year: number): number {
   return books.filter((b) => b.date_finished && new Date(b.date_finished).getFullYear() === year)
     .length;
 }

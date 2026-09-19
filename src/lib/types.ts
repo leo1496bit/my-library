@@ -103,8 +103,8 @@ export interface Profile {
   share_slug: string | null;
 }
 
-// Colonnes exposées par la vue publique `shared_library_books` — sans
-// notes ni location (vie privée), voir supabase/migrations/0003_public_sharing.sql.
+// Colonnes renvoyées par les fonctions publiques get_shared_book(s) — sans
+// notes ni location (vie privée), voir supabase/migrations/0006_public_book_details_and_stats.sql.
 export interface SharedBook {
   id: string;
   user_id: string;
@@ -122,6 +122,8 @@ export interface SharedBook {
   rating: number | null;
   google_books_id: string | null;
   date_added: string;
+  date_started: string | null;
+  date_finished: string | null;
   tags?: Tag[];
 }
 

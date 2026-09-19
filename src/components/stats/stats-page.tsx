@@ -7,6 +7,7 @@ import { ReadingGoalCard } from "@/components/stats/reading-goal-card";
 import { MonthlyChart } from "@/components/stats/monthly-chart";
 import { ProportionBar } from "@/components/stats/proportion-bar";
 import { BarList } from "@/components/stats/bar-list";
+import { StatsSection } from "@/components/stats/stats-section";
 import {
   countByFormat,
   countByStatus,
@@ -54,9 +55,9 @@ export function StatsPage() {
 
       <ReadingGoalCard year={year} finished={finishedThisYear(books, year)} />
 
-      <Section title="Rythme de lecture" subtitle="Livres terminés par mois">
+      <StatsSection title="Rythme de lecture" subtitle="Livres terminés par mois">
         <MonthlyChart data={finishedPerMonth(books)} />
-      </Section>
+      </StatsSection>
 
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="text-sm font-medium text-foreground">Pages lues (estimation)</p>
@@ -64,39 +65,21 @@ export function StatsPage() {
         <p className="text-xs text-muted-foreground">Somme des pages des livres terminés</p>
       </div>
 
-      <Section title="Répartition par statut">
+      <StatsSection title="Répartition par statut">
         <ProportionBar entries={countByStatus(books)} />
-      </Section>
+      </StatsSection>
 
-      <Section title="Répartition par format">
+      <StatsSection title="Répartition par format">
         <ProportionBar entries={countByFormat(books)} />
-      </Section>
+      </StatsSection>
 
-      <Section title="Auteurs les plus lus">
+      <StatsSection title="Auteurs les plus lus">
         <BarList entries={topAuthors(books)} />
-      </Section>
+      </StatsSection>
 
-      <Section title="Genres les plus lus">
+      <StatsSection title="Genres les plus lus">
         <BarList entries={topGenres(books)} />
-      </Section>
+      </StatsSection>
     </div>
-  );
-}
-
-function Section({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <h2 className="text-sm font-medium text-foreground">{title}</h2>
-      {subtitle && <p className="mb-2 text-xs text-muted-foreground">{subtitle}</p>}
-      <div className={subtitle ? "mt-1" : "mt-3"}>{children}</div>
-    </section>
   );
 }
