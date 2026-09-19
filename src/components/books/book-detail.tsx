@@ -37,7 +37,6 @@ import { DetailField } from "@/components/books/detail-field";
 import { TagEditor } from "@/components/books/tag-editor";
 import { LoanBadge } from "@/components/books/loan-badge";
 import { LoanDialog } from "@/components/loans/loan-dialog";
-import { deleteBookAction } from "@/lib/actions/books";
 import { formatDate } from "@/lib/format";
 import { FORMAT_LABELS, type Book, type BookFormat, type BookStatus, type Loan, type Tag } from "@/lib/types";
 
@@ -168,10 +167,20 @@ export function BookDetail({ id }: { id: string }) {
 
   async function handleDelete() {
     setDeleting(true);
-    const result = await deleteBookAction(id);
+    const supabase = createClient();
+    // .select("id") permet de distinguer "aucune ligne trouvée/autorisée"
+    // (RLS ou id invalide) d'une vraie erreur réseau — sans ça, delete()
+    // renvoie un succès silencieux même quand rien n'a été supprimé.
+    const { data, error } = await supabase.from("books").delete().eq("id", id).select("id");
     setDeleting(false);
-    if (result.error) {
-      toast.error(result.error);
+
+    if (error) {
+      toast.error("Suppression impossible. Réessayez.");
+      return;
+    }
+    if (!data || data.length === 0) {
+      toast.error("Ce livre est introuvable ou a déjà été supprimé.");
+      setDeleteOpen(false);
       return;
     }
     toast.success("Livre supprimé.");

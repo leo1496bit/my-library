@@ -68,14 +68,3 @@ export async function addBookAction(
   revalidatePath("/stats");
   return { book: book as Book };
 }
-
-export async function deleteBookAction(id: string): Promise<{ error?: string }> {
-  const supabase = await createClient();
-  const { error } = await supabase.from("books").delete().eq("id", id);
-  if (error) {
-    console.error("deleteBookAction failed", error);
-    return { error: "Suppression impossible." };
-  }
-  revalidatePath("/library");
-  return {};
-}
