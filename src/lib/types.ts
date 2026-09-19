@@ -95,3 +95,36 @@ export interface BookWithRelations extends Book {
   active_loan?: Loan | null;
   tags?: Tag[];
 }
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  sharing_enabled: boolean;
+  share_slug: string | null;
+}
+
+// Colonnes exposées par la vue publique `shared_library_books` — sans
+// notes ni location (vie privée), voir supabase/migrations/0003_public_sharing.sql.
+export interface SharedBook {
+  id: string;
+  user_id: string;
+  title: string;
+  author: string | null;
+  genre: string | null;
+  isbn: string | null;
+  cover_url: string | null;
+  publisher: string | null;
+  published_year: number | null;
+  language: string | null;
+  page_count: number | null;
+  format: BookFormat;
+  status: BookStatus;
+  rating: number | null;
+  google_books_id: string | null;
+  date_added: string;
+  tags?: Tag[];
+}
+
+// Statuts proposés lorsqu'un visiteur suggère un livre consulté sur une
+// bibliothèque partagée vers la sienne.
+export type SuggestStatus = Extract<BookStatus, "to_buy" | "to_read">;
