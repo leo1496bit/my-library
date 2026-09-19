@@ -1,26 +1,159 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-display);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-chart-magnitude: var(--chart-magnitude);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-loan: var(--loan);
+  --color-loan-foreground: var(--loan-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  Bibliothèque personnelle — identité "fiche de catalogue".
+  Vert lampe de lecture en couleur de chrome, papier chaud en fond,
+  laiton en accent d'action, rouge tampon pour les prêts.
+*/
+:root {
+  --background: #efeae1;
+  --foreground: #211f1a;
+  --card: #fbf8f2;
+  --card-foreground: #211f1a;
+  --popover: #fbf8f2;
+  --popover-foreground: #211f1a;
+  --primary: #2f4a3c;
+  --primary-foreground: #f7f4ec;
+  --secondary: #e4dcc8;
+  --secondary-foreground: #3b3226;
+  --muted: #e7e1d3;
+  --muted-foreground: #6b6459;
+  --accent: #b8894a;
+  --accent-foreground: #241c0e;
+  --destructive: #a23e33;
+  --border: #dbd3c0;
+  --input: #dbd3c0;
+  --ring: #2f4a3c;
+  --loan: #a23e33;
+  --loan-foreground: #fbf8f2;
+  --success: #3f6b34;
+  --success-foreground: #f2f6ee;
+  /* Palette de graphiques : jeu catégoriel validé (contraste/CVD) pour les
+     répartitions à plusieurs séries, distinct du chrome de marque. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-magnitude: #836327;
+  --radius: 0.5rem;
+  --sidebar: #fbf8f2;
+  --sidebar-foreground: #211f1a;
+  --sidebar-primary: #2f4a3c;
+  --sidebar-primary-foreground: #f7f4ec;
+  --sidebar-accent: #e4dcc8;
+  --sidebar-accent-foreground: #3b3226;
+  --sidebar-border: #dbd3c0;
+  --sidebar-ring: #2f4a3c;
+}
+
+.dark {
+  --background: #14170f;
+  --foreground: #ede8dd;
+  --card: #1c2117;
+  --card-foreground: #ede8dd;
+  --popover: #1c2117;
+  --popover-foreground: #ede8dd;
+  --primary: #86ad92;
+  --primary-foreground: #12241a;
+  --secondary: #2a2e26;
+  --secondary-foreground: #ede8dd;
+  --muted: #262b24;
+  --muted-foreground: #a6a08f;
+  --accent: #c9a063;
+  --accent-foreground: #201804;
+  --destructive: #d97b6e;
+  --border: #333a31;
+  --input: #333a31;
+  --ring: #86ad92;
+  --loan: #d97b6e;
+  --loan-foreground: #241008;
+  --success: #8fbf7a;
+  --success-foreground: #14240e;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-magnitude: #c9a063;
+  --sidebar: #1c2117;
+  --sidebar-foreground: #ede8dd;
+  --sidebar-primary: #86ad92;
+  --sidebar-primary-foreground: #12241a;
+  --sidebar-accent: #2a2e26;
+  --sidebar-accent-foreground: #ede8dd;
+  --sidebar-border: #333a31;
+  --sidebar-ring: #86ad92;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Tampon de prêt : léger effet d'encrage incliné, réservé au badge "Prêté". */
+  .stamp-tilt {
+    transform: rotate(-2.5deg);
+  }
 }

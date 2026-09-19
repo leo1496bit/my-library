@@ -1,0 +1,16 @@
+{
+  "name": "Ma bibliothèque",
+  "short_name": "Bibliothèque",
+  "description": "Gérez votre collection de livres : lecture, prêts, statistiques et recommandations.",
+  "start_url": "/library",
+  "display": "standalone",
+  "background_color": "#efeae1",
+  "theme_color": "#efeae1",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
