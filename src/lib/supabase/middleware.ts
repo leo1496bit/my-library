@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Chemins accessibles sans session active.
-const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/auth/confirm"];
+// Chemins accessibles sans session active. /u/[slug] est la bibliothèque
+// partagée publique — volontairement accessible à tout visiteur.
+const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/auth/confirm", "/u"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
