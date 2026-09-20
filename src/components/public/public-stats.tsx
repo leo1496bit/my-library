@@ -33,11 +33,9 @@ export function PublicStats({
   useEffect(() => {
     const supabase = createClient();
     let cancelled = false;
-    supabase
-      .rpc("get_shared_books", { owner_id: ownerId })
-      .then(({ data }) => {
-        if (!cancelled) setBooks((data ?? []) as StatsSourceBook[]);
-      });
+    supabase.rpc("get_shared_books", { owner_id: ownerId }).then(({ data }) => {
+      if (!cancelled) setBooks((data ?? []) as StatsSourceBook[]);
+    });
     return () => {
       cancelled = true;
     };

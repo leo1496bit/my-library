@@ -21,7 +21,12 @@ export function PublicBookCard({
         <span className="flex h-20 w-14 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
           {book.cover_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={book.cover_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={book.cover_url}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
           ) : (
             <BookText className="size-6 text-muted-foreground" strokeWidth={1.5} />
           )}
@@ -58,7 +63,9 @@ export function PublicBookCard({
       <button
         type="button"
         onClick={() => onSuggest(book)}
-        aria-label={canSuggest ? `Suggérer ${book.title}` : `Se connecter pour suggérer ${book.title}`}
+        aria-label={
+          canSuggest ? `Suggérer ${book.title}` : `Se connecter pour suggérer ${book.title}`
+        }
         className="flex size-9 shrink-0 items-center justify-center rounded-full border border-accent/40 text-accent hover:bg-accent/10"
       >
         {canSuggest ? <Plus className="size-4" /> : <LogIn className="size-4" />}

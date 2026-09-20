@@ -12,7 +12,10 @@ import { PublicBookCard } from "@/components/public/public-book-card";
 import { SuggestSheet } from "@/components/public/suggest-sheet";
 import { BOOK_STATUSES, STATUS_LABELS, type SharedBook, type Tag } from "@/lib/types";
 
-const FILTERS = [{ value: "all", label: "Tous" }, ...BOOK_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))] as const;
+const FILTERS = [
+  { value: "all", label: "Tous" },
+  ...BOOK_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+] as const;
 
 export function PublicLibrary({
   ownerId,
@@ -48,7 +51,9 @@ export function PublicLibrary({
 
       if (cancelled) return;
 
-      const sortedBooks = [...(books ?? [])].sort((a, b) => b.date_added.localeCompare(a.date_added));
+      const sortedBooks = [...(books ?? [])].sort((a, b) =>
+        b.date_added.localeCompare(a.date_added),
+      );
 
       const tagsByBook = new Map<string, Tag[]>();
       for (const row of (bookTags ?? []) as unknown as { book_id: string; tags: Tag }[]) {
@@ -125,7 +130,10 @@ export function PublicLibrary({
             </div>
           </div>
           {isAuthenticated ? (
-            <Link href="/library" className="shrink-0 text-xs text-muted-foreground underline underline-offset-4">
+            <Link
+              href="/library"
+              className="shrink-0 text-xs text-muted-foreground underline underline-offset-4"
+            >
               Ma bibliothèque
             </Link>
           ) : (
@@ -139,7 +147,9 @@ export function PublicLibrary({
         </div>
         <div className="mt-2 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            {books ? `${books.length} livre${books.length > 1 ? "s" : ""} · lecture seule` : "Chargement…"}
+            {books
+              ? `${books.length} livre${books.length > 1 ? "s" : ""} · lecture seule`
+              : "Chargement…"}
           </p>
           <Link
             href={`/u/${slug}/stats`}
@@ -219,7 +229,9 @@ export function PublicLibrary({
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <LibraryBig className="size-8 text-muted-foreground" strokeWidth={1.5} />
             <p className="max-w-[28ch] text-sm text-muted-foreground">
-              {books?.length ? "Aucun livre ne correspond à ces filtres." : "Cette bibliothèque est vide."}
+              {books?.length
+                ? "Aucun livre ne correspond à ces filtres."
+                : "Cette bibliothèque est vide."}
             </p>
           </div>
         )}

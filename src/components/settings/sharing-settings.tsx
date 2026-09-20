@@ -141,8 +141,8 @@ export function SharingSettings() {
         <div>
           <h2 className="text-sm font-medium text-foreground">Bibliothèque publique</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Visible sans compte, en lecture seule — un visiteur connecté à son propre compte
-            peut suggérer un livre vers sa bibliothèque, jamais modifier la vôtre.
+            Visible sans compte, en lecture seule — un visiteur connecté à son propre compte peut
+            suggérer un livre vers sa bibliothèque, jamais modifier la vôtre.
           </p>
         </div>
         <Switch checked={enabled} onCheckedChange={handleToggle} disabled={pending} />
@@ -153,7 +153,12 @@ export function SharingSettings() {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="share-link">Lien à partager</Label>
             <div className="flex gap-2">
-              <Input id="share-link" readOnly value={shareUrl(slug)} className="font-mono text-xs" />
+              <Input
+                id="share-link"
+                readOnly
+                value={shareUrl(slug)}
+                className="font-mono text-xs"
+              />
               <Button
                 type="button"
                 variant="outline"
@@ -168,7 +173,12 @@ export function SharingSettings() {
                 variant="outline"
                 size="icon"
                 render={
-                  <a href={shareUrl(slug)} target="_blank" rel="noopener noreferrer" aria-label="Ouvrir le lien" />
+                  <a
+                    href={shareUrl(slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Ouvrir le lien"
+                  />
                 }
               >
                 <ExternalLink className="size-4" />

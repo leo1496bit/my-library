@@ -2,11 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PublicLibrary } from "@/components/public/public-library";
 
-export default async function SharedLibraryPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function SharedLibraryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
 
