@@ -159,4 +159,91 @@
   .stamp-tilt {
     transform: rotate(-2.5deg);
   }
+
+  /* Démo en boucle du héros de la page d'accueil publique (recherche →
+     fiche remplie) — seule séquence animée en continu de la page, pensée
+     comme une vraie démonstration du produit plutôt qu'une décoration.
+     Voir landing-demo-card.tsx. */
+  @keyframes landing-demo-type {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+    6% {
+      clip-path: inset(0 75% 0 0);
+    }
+    12% {
+      clip-path: inset(0 50% 0 0);
+    }
+    18% {
+      clip-path: inset(0 25% 0 0);
+    }
+    24%,
+    86% {
+      clip-path: inset(0 0 0 0);
+    }
+    100% {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+  @keyframes landing-demo-cursor {
+    0%,
+    24% {
+      opacity: 1;
+    }
+    25%,
+    49% {
+      opacity: 0;
+    }
+    50%,
+    74% {
+      opacity: 1;
+    }
+    75%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes landing-demo-result {
+    0%,
+    28% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    38%,
+    88% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    96%,
+    100% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  .landing-demo-query {
+    animation: landing-demo-type 7s ease-in-out infinite;
+  }
+  .landing-demo-cursor {
+    animation: landing-demo-cursor 7s steps(1) infinite;
+  }
+  .landing-demo-result {
+    animation: landing-demo-result 7s ease-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .landing-demo-query,
+    .landing-demo-cursor,
+    .landing-demo-result {
+      animation: none;
+    }
+    .landing-demo-query {
+      clip-path: inset(0 0 0 0);
+    }
+    .landing-demo-cursor {
+      display: none;
+    }
+    .landing-demo-result {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
