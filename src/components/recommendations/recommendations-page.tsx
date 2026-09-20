@@ -14,7 +14,9 @@ export function RecommendationsPage() {
   useEffect(() => {
     fetch("/api/recommendations")
       .then((res) => res.json())
-      .then((data: { recommendations: Recommendation[] }) => setRecommendations(data.recommendations))
+      .then((data: { recommendations: Recommendation[] }) =>
+        setRecommendations(data.recommendations),
+      )
       .catch(() => setRecommendations([]));
   }, []);
 

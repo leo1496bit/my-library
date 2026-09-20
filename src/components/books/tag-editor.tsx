@@ -87,7 +87,12 @@ export function TagEditor({
           placeholder="Ajouter un tag"
           className="w-24 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
         />
-        <button type="button" onClick={addTag} aria-label="Ajouter" className="text-muted-foreground">
+        <button
+          type="button"
+          onClick={addTag}
+          aria-label="Ajouter"
+          className="text-muted-foreground"
+        >
           <Plus className="size-3" />
         </button>
       </span>

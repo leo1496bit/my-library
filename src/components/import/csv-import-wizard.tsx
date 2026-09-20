@@ -59,7 +59,11 @@ export function CsvImportWizard() {
         // au champ de l'app.
         const guessed: ColumnMapping = {};
         for (const field of IMPORT_FIELDS) {
-          const match = cols.find((c) => normalizeKey(c).includes(field.key.replace("_", "")) || normalizeKey(c) === normalizeKey(field.label));
+          const match = cols.find(
+            (c) =>
+              normalizeKey(c).includes(field.key.replace("_", "")) ||
+              normalizeKey(c) === normalizeKey(field.label),
+          );
           if (match) guessed[field.key] = match;
         }
         setMapping(guessed);
@@ -128,7 +132,10 @@ export function CsvImportWizard() {
   if (step === "upload") {
     return (
       <div className="flex flex-col gap-4 px-4 pt-4">
-        <Header title="Importer un CSV" subtitle="Ajoutez plusieurs livres d'un coup depuis un fichier CSV." />
+        <Header
+          title="Importer un CSV"
+          subtitle="Ajoutez plusieurs livres d'un coup depuis un fichier CSV."
+        />
         <label
           htmlFor="csv-file"
           className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border bg-card px-4 py-12 text-center hover:border-primary/40"
@@ -153,7 +160,10 @@ export function CsvImportWizard() {
   if (step === "map") {
     return (
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
-        <Header title="Associer les colonnes" subtitle={`${fileName} · ${rows.length} lignes détectées`} />
+        <Header
+          title="Associer les colonnes"
+          subtitle={`${fileName} · ${rows.length} lignes détectées`}
+        />
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3">
           {IMPORT_FIELDS.map((field) => (
             <div key={field.key} className="flex items-center justify-between gap-3">
@@ -252,8 +262,8 @@ export function CsvImportWizard() {
       <div>
         <h1 className="font-heading text-xl text-foreground">Import terminé</h1>
         <p className="text-sm text-muted-foreground">
-          {importedCount} livre{importedCount > 1 ? "s" : ""} ajouté{importedCount > 1 ? "s" : ""} à votre
-          bibliothèque.
+          {importedCount} livre{importedCount > 1 ? "s" : ""} ajouté{importedCount > 1 ? "s" : ""} à
+          votre bibliothèque.
         </p>
       </div>
       <Button onClick={() => router.push("/library")}>Voir ma bibliothèque</Button>

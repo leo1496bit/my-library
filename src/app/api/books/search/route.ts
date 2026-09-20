@@ -15,9 +15,6 @@ export async function GET(request: NextRequest) {
     console.error("Google Books search failed", error);
     // On ne bloque jamais l'utilisateur : résultats vides, le client bascule
     // sur le formulaire d'ajout manuel.
-    return NextResponse.json(
-      { results: [], error: "unavailable" },
-      { status: 200 },
-    );
+    return NextResponse.json({ results: [], error: "unavailable" }, { status: 200 });
   }
 }

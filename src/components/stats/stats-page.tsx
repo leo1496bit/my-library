@@ -61,7 +61,9 @@ export function StatsPage() {
 
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="text-sm font-medium text-foreground">Pages lues (estimation)</p>
-        <p className="mt-1 font-heading text-3xl text-foreground">{pages.toLocaleString("fr-FR")}</p>
+        <p className="mt-1 font-heading text-3xl text-foreground">
+          {pages.toLocaleString("fr-FR")}
+        </p>
         <p className="text-xs text-muted-foreground">Somme des pages des livres terminés</p>
       </div>
 

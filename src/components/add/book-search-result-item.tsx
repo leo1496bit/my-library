@@ -19,20 +19,13 @@ export function BookSearchResultItem({
       <span className="flex h-16 w-11 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
         {result.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={result.coverUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
+          <img src={result.coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <BookText className="size-5 text-muted-foreground" strokeWidth={1.5} />
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-foreground">
-          {result.title}
-        </span>
+        <span className="block truncate text-sm font-medium text-foreground">{result.title}</span>
         <span className="block truncate text-xs text-muted-foreground">
           {[result.author, result.publishedYear].filter(Boolean).join(" — ") || "Auteur inconnu"}
         </span>
