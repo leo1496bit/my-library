@@ -47,7 +47,7 @@ const GENRES = [
   { key: "sf", label: "Science-fiction", count: 4 },
 ];
 
-export function LandingPage() {
+export function LandingPage({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur-sm">
@@ -58,19 +58,25 @@ export function LandingPage() {
             </span>
             <span className="font-heading text-lg text-foreground italic">Ma bibliothèque</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              nativeButton={false}
-              render={<Link href="/login" />}
-              className="hidden sm:inline-flex"
-            >
-              Se connecter
+          {isAuthenticated ? (
+            <Button nativeButton={false} render={<Link href="/library" />}>
+              Aller à ma bibliothèque
             </Button>
-            <Button nativeButton={false} render={<Link href="/signup" />}>
-              Créer un compte
-            </Button>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href="/login" />}
+                className="hidden sm:inline-flex"
+              >
+                Se connecter
+              </Button>
+              <Button nativeButton={false} render={<Link href="/signup" />}>
+                Créer un compte
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -87,20 +93,33 @@ export function LandingPage() {
               Vos livres, vos prêts, vos lectures : réunis en un seul endroit.
             </p>
             <div className="flex flex-col items-start gap-4 pt-1 sm:flex-row sm:items-center sm:gap-6">
-              <Button
-                size="lg"
-                className="h-11 px-6 text-base"
-                nativeButton={false}
-                render={<Link href="/signup" />}
-              >
-                Créer un compte gratuitement
-              </Button>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-foreground hover:text-primary"
-              >
-                Se connecter
-              </Link>
+              {isAuthenticated ? (
+                <Button
+                  size="lg"
+                  className="h-11 px-6 text-base"
+                  nativeButton={false}
+                  render={<Link href="/library" />}
+                >
+                  Aller à ma bibliothèque
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    className="h-11 px-6 text-base"
+                    nativeButton={false}
+                    render={<Link href="/signup" />}
+                  >
+                    Créer un compte gratuitement
+                  </Button>
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-foreground hover:text-primary"
+                  >
+                    Se connecter
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -214,16 +233,17 @@ export function LandingPage() {
               Votre bibliothèque vous attend.
             </h2>
             <p className="max-w-[40ch] text-sm text-primary-foreground/80 sm:text-base">
-              Gratuit, sans carte bancaire : le temps de créer un compte, votre premier livre est
-              déjà cherchable.
+              {isAuthenticated
+                ? "Retrouvez vos livres, vos prêts et vos statistiques."
+                : "Gratuit, sans carte bancaire : le temps de créer un compte, votre premier livre est déjà cherchable."}
             </p>
             <Button
               size="lg"
               className="h-11 bg-background px-6 text-base text-primary hover:bg-background/90"
               nativeButton={false}
-              render={<Link href="/signup" />}
+              render={<Link href={isAuthenticated ? "/library" : "/signup"} />}
             >
-              Créer un compte gratuitement
+              {isAuthenticated ? "Aller à ma bibliothèque" : "Créer un compte gratuitement"}
             </Button>
           </div>
         </section>
@@ -236,12 +256,20 @@ export function LandingPage() {
             Ma bibliothèque
           </span>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hover:text-foreground">
-              Connexion
-            </Link>
-            <Link href="/signup" className="hover:text-foreground">
-              Créer un compte
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/library" className="hover:text-foreground">
+                Ma bibliothèque
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-foreground">
+                  Connexion
+                </Link>
+                <Link href="/signup" className="hover:text-foreground">
+                  Créer un compte
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </footer>
