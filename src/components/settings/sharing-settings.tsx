@@ -30,14 +30,21 @@ export function SharingSettings() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from("profiles")
-      .select("id, display_name, sharing_enabled, share_slug")
-      .maybeSingle()
-      .then(({ data }) => {
-        setProfile(data ?? null);
-        setDisplayName(data?.display_name ?? "");
-      });
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        setProfile(null);
+        return;
+      }
+      supabase
+        .from("profiles")
+        .select("id, display_name, sharing_enabled, share_slug")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setProfile(data ?? null);
+          setDisplayName(data?.display_name ?? "");
+        });
+    });
   }, []);
 
   async function handleToggle(nextEnabled: boolean) {

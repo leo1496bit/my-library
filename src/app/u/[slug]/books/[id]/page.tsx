@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getPublicProfileBySlug } from "@/lib/data/public-profile";
 import { PublicBookDetail } from "@/components/public/public-book-detail";
 
 export default async function PublicBookDetailPage({
@@ -8,18 +8,11 @@ export default async function PublicBookDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const supabase = await createClient();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, sharing_enabled")
-    .eq("share_slug", slug)
-    .eq("sharing_enabled", true)
-    .maybeSingle();
+  const profile = await getPublicProfileBySlug(slug);
 
   if (!profile) {
     notFound();
   }
 
-  return <PublicBookDetail bookId={id} slug={slug} />;
+  return <PublicBookDetail bookId={id} ownerId={profile.id} slug={slug} />;
 }

@@ -12,7 +12,15 @@ import { SuggestSheet } from "@/components/public/suggest-sheet";
 import { formatDate } from "@/lib/format";
 import { FORMAT_LABELS, type SharedBook, type Tag } from "@/lib/types";
 
-export function PublicBookDetail({ bookId, slug }: { bookId: string; slug: string }) {
+export function PublicBookDetail({
+  bookId,
+  ownerId,
+  slug,
+}: {
+  bookId: string;
+  ownerId: string;
+  slug: string;
+}) {
   const router = useRouter();
   const [book, setBook] = useState<SharedBook | null | "not-found">(null);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -24,9 +32,16 @@ export function PublicBookDetail({ bookId, slug }: { bookId: string; slug: strin
     let cancelled = false;
 
     async function load() {
+      // Réinitialisé à chaque changement de livre : le composant peut être
+      // réutilisé entre deux navigations client-side (retour/avant), donc
+      // sans ce reset l'ancien livre/tags resteraient affichés pendant le
+      // chargement du nouveau, voire figés si le nouveau est introuvable.
+      setBook(null);
+      setTags([]);
+
       const [{ data: userData }, { data: rows }, { data: bookTags }] = await Promise.all([
         supabase.auth.getUser(),
-        supabase.rpc("get_shared_book", { p_book_id: bookId }),
+        supabase.rpc("get_shared_book", { p_book_id: bookId, p_owner_id: ownerId }),
         supabase.from("book_tags").select("tags(*)").eq("book_id", bookId),
       ]);
 
@@ -37,6 +52,7 @@ export function PublicBookDetail({ bookId, slug }: { bookId: string; slug: strin
       const found = rows?.[0];
       if (!found) {
         setBook("not-found");
+        setTags([]);
         return;
       }
       setBook(found as SharedBook);
@@ -49,7 +65,7 @@ export function PublicBookDetail({ bookId, slug }: { bookId: string; slug: strin
     return () => {
       cancelled = true;
     };
-  }, [bookId]);
+  }, [bookId, ownerId]);
 
   if (book === null) {
     return (
