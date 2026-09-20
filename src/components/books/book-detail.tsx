@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BookText, ChevronLeft, MoreVertical, Trash2 } from "lucide-react";
+import { BookText, ChevronLeft, ImagePlus, MoreVertical, Trash2 } from "lucide-react";
 import { deleteBook, fetchBookDetail, updateBook } from "@/lib/data/books";
 import { markLoanReturned } from "@/lib/data/loans";
 import { NotFoundError } from "@/lib/data/errors";
@@ -39,7 +39,9 @@ import { DetailField } from "@/components/books/detail-field";
 import { TagEditor } from "@/components/books/tag-editor";
 import { LoanBadge } from "@/components/books/loan-badge";
 import { LoanDialog } from "@/components/loans/loan-dialog";
+import { GoogleBookMatchDialog } from "@/components/books/google-book-match-dialog";
 import { formatDate } from "@/lib/format";
+import type { GoogleBookResult } from "@/lib/google-books";
 import {
   FORMAT_LABELS,
   type Book,
@@ -58,6 +60,7 @@ export function BookDetail({ id }: { id: string }) {
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [matchDialog, setMatchDialog] = useState<"cover" | "title" | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,13 +110,22 @@ export function BookDetail({ id }: { id: string }) {
   const activeLoan = loans.find((l) => !l.returned_at) ?? null;
   const pastLoans = loans.filter((l) => l.returned_at);
 
-  async function saveField(field: keyof Book, value: string | number | null) {
+  async function saveFields(patch: Partial<Book>, successMessage?: string) {
     try {
-      const updated = await updateBook(id, { [field]: value });
+      const updated = await updateBook(id, patch);
       setBook(updated);
+      if (successMessage) toast.success(successMessage);
     } catch {
       toast.error("La modification n'a pas pu être enregistrée.");
     }
+  }
+
+  async function saveField(
+    field: keyof Book,
+    value: string | number | null,
+    successMessage?: string,
+  ) {
+    await saveFields({ [field]: value } as Partial<Book>, successMessage);
   }
 
   async function handleStatusChange(status: BookStatus) {
@@ -138,6 +150,37 @@ export function BookDetail({ id }: { id: string }) {
 
   async function handleFormatChange(format: BookFormat) {
     await saveField("format", format);
+  }
+
+  async function handleCoverMatch(result: GoogleBookResult) {
+    if (!result.coverUrl) {
+      toast.error("Cette édition n'a pas de couverture disponible.");
+      return;
+    }
+    await saveField("cover_url", result.coverUrl, "Couverture mise à jour.");
+  }
+
+  async function handleCoverUrlInput(url: string) {
+    await saveField("cover_url", url, "Couverture mise à jour.");
+  }
+
+  async function handleBookMatch(result: GoogleBookResult) {
+    // Recopie tout ce que Google Books a retrouvé sur l'édition choisie —
+    // pas seulement le titre — pour corriger d'un coup une fiche mal
+    // renseignée, comme le fait l'ajout rapide à la création.
+    const patch: Partial<Book> = {
+      title: result.title,
+      author: result.author,
+      genre: result.genre,
+      isbn: result.isbn,
+      publisher: result.publisher,
+      published_year: result.publishedYear,
+      language: result.language,
+      page_count: result.pageCount,
+      google_books_id: result.googleBooksId,
+    };
+    if (result.coverUrl) patch.cover_url = result.coverUrl;
+    await saveFields(patch, "Détails mis à jour depuis Google Books.");
   }
 
   async function handleReturned(loan: Loan) {
@@ -208,26 +251,33 @@ export function BookDetail({ id }: { id: string }) {
       </div>
 
       <div className="flex gap-4">
-        <span className="flex h-40 w-28 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
-          {book.cover_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={book.cover_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <BookText className="size-8 text-muted-foreground" strokeWidth={1.5} />
-          )}
-        </span>
+        <div className="relative shrink-0">
+          <span className="flex h-40 w-28 items-center justify-center overflow-hidden rounded-sm border border-border bg-muted">
+            {book.cover_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={book.cover_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <BookText className="size-8 text-muted-foreground" strokeWidth={1.5} />
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => setMatchDialog("cover")}
+            aria-label="Changer la couverture"
+            className="absolute -right-1.5 -bottom-1.5 flex size-7 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm hover:bg-secondary"
+          >
+            <ImagePlus className="size-3.5" />
+          </button>
+        </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <input
-            defaultValue={book.title}
-            key={`title-${book.id}`}
-            onBlur={(e) =>
-              e.target.value.trim() &&
-              e.target.value !== book.title &&
-              saveField("title", e.target.value.trim())
-            }
-            className="font-heading text-xl leading-snug text-foreground outline-none"
-            aria-label="Titre"
-          />
+          <button
+            type="button"
+            onClick={() => setMatchDialog("title")}
+            aria-label="Corriger les informations du livre depuis Google Books"
+            className="w-fit min-w-0 text-left font-heading text-xl leading-snug text-foreground outline-none"
+          >
+            {book.title}
+          </button>
           <input
             defaultValue={book.author ?? ""}
             key={`author-${book.id}`}
@@ -376,6 +426,23 @@ export function BookDetail({ id }: { id: string }) {
         open={loanDialogOpen}
         onOpenChange={setLoanDialogOpen}
         onLoaned={(loan) => setLoans((prev) => [loan, ...prev])}
+      />
+
+      <GoogleBookMatchDialog
+        open={matchDialog !== null}
+        onOpenChange={(next) => !next && setMatchDialog(null)}
+        title={matchDialog === "cover" ? "Changer la couverture" : "Corriger via Google Books"}
+        description={
+          matchDialog === "cover"
+            ? "Cherchez une édition pour reprendre sa couverture, ou collez l'URL d'une image."
+            : "Choisissez la bonne édition : titre, auteur, genre, éditeur, année, pages, ISBN et langue seront mis à jour."
+        }
+        initialQuery={matchDialog === "title" ? book.title : undefined}
+        onSelect={(result) => {
+          if (matchDialog === "cover") handleCoverMatch(result);
+          else if (matchDialog === "title") handleBookMatch(result);
+        }}
+        customImage={matchDialog === "cover" ? { onUse: handleCoverUrlInput } : undefined}
       />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

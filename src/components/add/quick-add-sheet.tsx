@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { BookText, ChevronLeft, Loader2, SearchX } from "lucide-react";
+import { BookText, ChevronLeft, Loader2, Plus, SearchX, X } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -19,7 +19,10 @@ import { ManualAddForm } from "@/components/add/manual-add-form";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useAddBookSheet } from "@/components/add/add-book-context";
 import { addBookAction } from "@/lib/actions/books";
-import { STATUS_LABELS, type QuickAddStatus } from "@/lib/types";
+import { attachTags, fetchAllTags } from "@/lib/data/tags";
+import { suggestTagsForBook } from "@/lib/tag-suggestions";
+import { cn } from "@/lib/utils";
+import { STATUS_LABELS, type QuickAddStatus, type Tag } from "@/lib/types";
 import type { GoogleBookResult } from "@/lib/google-books";
 
 type Step = "search" | "confirm" | "manual";
@@ -40,6 +43,11 @@ export function QuickAddSheet() {
   const [status, setStatus] = useState<QuickAddStatus>("to_read");
   const [pending, startTransition] = useTransition();
 
+  const [allTags, setAllTags] = useState<Tag[] | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [newTagNames, setNewTagNames] = useState<string[]>([]);
+  const [tagDraft, setTagDraft] = useState("");
+
   // Réinitialise le flux à chaque ouverture (pattern "ajuster l'état pendant
   // le rendu" plutôt qu'un effet, pour éviter un rendu en cascade évitable).
   const [prevOpen, setPrevOpen] = useState(open);
@@ -53,8 +61,21 @@ export function QuickAddSheet() {
       setSelected(null);
       setStatus("to_read");
       setSearchFailed(false);
+      setSelectedTagIds(new Set());
+      setNewTagNames([]);
+      setTagDraft("");
     }
   }
+
+  // Charge la liste des tags existants à l'ouverture, pour l'autosuggestion
+  // en étape de confirmation — une requête légère, sans lien avec la
+  // recherche Google Books en cours.
+  useEffect(() => {
+    if (!open) return;
+    fetchAllTags()
+      .then(setAllTags)
+      .catch(() => setAllTags([]));
+  }, [open]);
 
   const trimmedQuery = debouncedQuery.trim();
   // "En recherche" se déduit de la requête en cours vs la dernière requête
@@ -93,6 +114,31 @@ export function QuickAddSheet() {
     setSelected(result);
     setStatus("to_read");
     setStep("confirm");
+    const suggested = suggestTagsForBook(result, allTags ?? []);
+    setSelectedTagIds(new Set(suggested.map((t) => t.id)));
+    setNewTagNames([]);
+    setTagDraft("");
+  }
+
+  function toggleTag(tagId: string) {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  }
+
+  function addTagDraft() {
+    const name = tagDraft.trim();
+    if (!name) return;
+    const existing = (allTags ?? []).find((t) => t.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      setSelectedTagIds((prev) => new Set(prev).add(existing.id));
+    } else if (!newTagNames.some((n) => n.toLowerCase() === name.toLowerCase())) {
+      setNewTagNames((prev) => [...prev, name]);
+    }
+    setTagDraft("");
   }
 
   function handleConfirmAdd() {
@@ -116,6 +162,13 @@ export function QuickAddSheet() {
       if (result.error || !result.book) {
         toast.error(result.error ?? "Impossible d'ajouter ce livre.");
         return;
+      }
+      if (selectedTagIds.size > 0 || newTagNames.length > 0) {
+        try {
+          await attachTags(result.book.id, [...selectedTagIds], newTagNames);
+        } catch {
+          toast.error("Le livre a été ajouté, mais certains tags n'ont pas pu être appliqués.");
+        }
       }
       toast.success(`« ${result.book.title} » ajouté à votre bibliothèque`);
       notifyAdded();
@@ -271,6 +324,71 @@ export function QuickAddSheet() {
                   onChange={setStatus}
                   options={QUICK_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))}
                 />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium text-foreground">Tags</span>
+                <p className="text-xs text-muted-foreground">
+                  Suggérés à partir du genre du livre — modifiables.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(allTags ?? []).map((tag) => {
+                    const active = selectedTagIds.has(tag.id);
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => toggleTag(tag.id)}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                          active
+                            ? "border-accent/30 bg-accent/15 text-accent-foreground dark:text-accent"
+                            : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
+                        )}
+                      >
+                        {tag.name}
+                      </button>
+                    );
+                  })}
+                  {newTagNames.map((name) => (
+                    <span
+                      key={name}
+                      className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground"
+                    >
+                      {name}
+                      <button
+                        type="button"
+                        onClick={() => setNewTagNames((prev) => prev.filter((n) => n !== name))}
+                        aria-label={`Retirer le tag ${name}`}
+                        className="text-secondary-foreground/60 hover:text-secondary-foreground"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2 py-1">
+                    <input
+                      value={tagDraft}
+                      onChange={(e) => setTagDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          addTagDraft();
+                        }
+                      }}
+                      placeholder="Nouveau tag"
+                      className="w-20 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTagDraft}
+                      aria-label="Ajouter"
+                      className="text-muted-foreground"
+                    >
+                      <Plus className="size-3" />
+                    </button>
+                  </span>
+                </div>
               </div>
 
               <Button onClick={handleConfirmAdd} disabled={pending} size="lg" className="mt-1">

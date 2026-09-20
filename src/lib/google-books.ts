@@ -99,7 +99,17 @@ async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]
   const data = (await res.json()) as { items?: GoogleVolumeItem[] };
   if (!data.items?.length) return [];
 
-  return data.items.map(mapVolume).filter((b): b is GoogleBookResult => b !== null);
+  const results = data.items.map(mapVolume).filter((b): b is GoogleBookResult => b !== null);
+
+  // L'API renvoie parfois deux fois le même volume (mêmes filtres appliqués
+  // à des requêtes qui se chevauchent) — dédoublonné ici plutôt que dans
+  // chaque UI qui affiche des résultats de recherche.
+  const seen = new Set<string>();
+  return results.filter((r) => {
+    if (seen.has(r.googleBooksId)) return false;
+    seen.add(r.googleBooksId);
+    return true;
+  });
 }
 
 export async function searchBooksByTitle(
