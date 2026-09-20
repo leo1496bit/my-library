@@ -54,31 +54,34 @@
 }
 
 /*
-  Bibliothèque personnelle — identité "fiche de catalogue".
-  Vert lampe de lecture en couleur de chrome, papier chaud en fond,
-  laiton en accent d'action, rouge tampon pour les prêts.
+  Bibliothèque personnelle — identité "fiche de catalogue" (inchangée),
+  reteintée en bleu/rouge sur un fond clair et frais plutôt que le vert/
+  laiton sur papier chaud d'origine. Bleu encre en couleur de chrome,
+  rouge réservé à l'accent (tags, actions secondaires) — le tampon de prêt
+  (--loan) reste sa propre nuance de rouge, plus sombre, pour ne jamais se
+  confondre avec les puces de tag à l'accent.
 */
 :root {
-  --background: #efeae1;
-  --foreground: #211f1a;
-  --card: #fbf8f2;
-  --card-foreground: #211f1a;
-  --popover: #fbf8f2;
-  --popover-foreground: #211f1a;
-  --primary: #2f4a3c;
-  --primary-foreground: #f7f4ec;
-  --secondary: #e4dcc8;
-  --secondary-foreground: #3b3226;
-  --muted: #e7e1d3;
-  --muted-foreground: #6b6459;
-  --accent: #b8894a;
-  --accent-foreground: #241c0e;
-  --destructive: #a23e33;
-  --border: #dbd3c0;
-  --input: #dbd3c0;
-  --ring: #2f4a3c;
-  --loan: #a23e33;
-  --loan-foreground: #fbf8f2;
+  --background: #f6f8fc;
+  --foreground: #17213e;
+  --card: #ffffff;
+  --card-foreground: #17213e;
+  --popover: #ffffff;
+  --popover-foreground: #17213e;
+  --primary: #2c4fd6;
+  --primary-foreground: #f7f9ff;
+  --secondary: #e8edf9;
+  --secondary-foreground: #17213e;
+  --muted: #eef1f7;
+  --muted-foreground: #5b6478;
+  --accent: #d2293d;
+  --accent-foreground: #4a0e14;
+  --destructive: #d2293d;
+  --border: #dee4f0;
+  --input: #dee4f0;
+  --ring: #2c4fd6;
+  --loan: #9c2a2a;
+  --loan-foreground: #fbf3f2;
   --success: #3f6b34;
   --success-foreground: #f2f6ee;
   /* Palette de graphiques : jeu catégoriel validé (contraste/CVD) pour les
@@ -88,39 +91,39 @@
   --chart-3: #1baf7a;
   --chart-4: #eda100;
   --chart-5: #e87ba4;
-  --chart-magnitude: #836327;
+  --chart-magnitude: #2c4fd6;
   --radius: 0.5rem;
-  --sidebar: #fbf8f2;
-  --sidebar-foreground: #211f1a;
-  --sidebar-primary: #2f4a3c;
-  --sidebar-primary-foreground: #f7f4ec;
-  --sidebar-accent: #e4dcc8;
-  --sidebar-accent-foreground: #3b3226;
-  --sidebar-border: #dbd3c0;
-  --sidebar-ring: #2f4a3c;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #17213e;
+  --sidebar-primary: #2c4fd6;
+  --sidebar-primary-foreground: #f7f9ff;
+  --sidebar-accent: #e8edf9;
+  --sidebar-accent-foreground: #17213e;
+  --sidebar-border: #dee4f0;
+  --sidebar-ring: #2c4fd6;
 }
 
 .dark {
-  --background: #14170f;
-  --foreground: #ede8dd;
-  --card: #1c2117;
-  --card-foreground: #ede8dd;
-  --popover: #1c2117;
-  --popover-foreground: #ede8dd;
-  --primary: #86ad92;
-  --primary-foreground: #12241a;
-  --secondary: #2a2e26;
-  --secondary-foreground: #ede8dd;
-  --muted: #262b24;
-  --muted-foreground: #a6a08f;
-  --accent: #c9a063;
-  --accent-foreground: #201804;
-  --destructive: #d97b6e;
-  --border: #333a31;
-  --input: #333a31;
-  --ring: #86ad92;
-  --loan: #d97b6e;
-  --loan-foreground: #241008;
+  --background: #10131c;
+  --foreground: #e8ebf4;
+  --card: #171b28;
+  --card-foreground: #e8ebf4;
+  --popover: #171b28;
+  --popover-foreground: #e8ebf4;
+  --primary: #6e8bff;
+  --primary-foreground: #0c1224;
+  --secondary: #232838;
+  --secondary-foreground: #e8ebf4;
+  --muted: #1d2230;
+  --muted-foreground: #9aa3b8;
+  --accent: #e15468;
+  --accent-foreground: #2a0a0e;
+  --destructive: #e15468;
+  --border: #2a3040;
+  --input: #2a3040;
+  --ring: #6e8bff;
+  --loan: #c97c82;
+  --loan-foreground: #2b0e10;
   --success: #8fbf7a;
   --success-foreground: #14240e;
   --chart-1: #3987e5;
@@ -128,15 +131,15 @@
   --chart-3: #199e70;
   --chart-4: #c98500;
   --chart-5: #d55181;
-  --chart-magnitude: #c9a063;
-  --sidebar: #1c2117;
-  --sidebar-foreground: #ede8dd;
-  --sidebar-primary: #86ad92;
-  --sidebar-primary-foreground: #12241a;
-  --sidebar-accent: #2a2e26;
-  --sidebar-accent-foreground: #ede8dd;
-  --sidebar-border: #333a31;
-  --sidebar-ring: #86ad92;
+  --chart-magnitude: #6e8bff;
+  --sidebar: #171b28;
+  --sidebar-foreground: #e8ebf4;
+  --sidebar-primary: #6e8bff;
+  --sidebar-primary-foreground: #0c1224;
+  --sidebar-accent: #232838;
+  --sidebar-accent-foreground: #e8ebf4;
+  --sidebar-border: #2a3040;
+  --sidebar-ring: #6e8bff;
 }
 
 @layer base {
