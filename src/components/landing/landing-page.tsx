@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/books/status-badge";
 import { LoanBadge } from "@/components/books/loan-badge";
 import { BarList } from "@/components/stats/bar-list";
 import { LandingDemoCard } from "@/components/landing/landing-demo-card";
+import { LandingAutofillDemo } from "@/components/landing/landing-autofill-demo";
 import { LandingCountUp } from "@/components/landing/landing-count-up";
 import type { ReactNode } from "react";
 
@@ -128,10 +129,19 @@ export function LandingPage() {
           </div>
         </section>
 
+        {/* Un titre suffit — l'auto-remplissage, mis en avant en premier */}
+        <DeepDive
+          heading="Un titre suffit."
+          body="Tapez le nom d'un livre, choisissez la bonne édition : couverture, auteur, éditeur, année, pages et ISBN se remplissent tout seuls, via Google Books."
+        >
+          <LandingAutofillDemo />
+        </DeepDive>
+
         {/* Suivi des prêts */}
         <DeepDive
           heading="Chaque prêt sous contrôle."
           body="Notez à qui vous prêtez un livre : sachez toujours ce qui est sorti, depuis quand, et quand ça doit revenir."
+          tinted
         >
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
             <div className="flex items-start justify-between gap-3">
@@ -151,7 +161,6 @@ export function LandingPage() {
         <DeepDive
           heading="Vos habitudes, en un regard."
           body="Combien de livres terminés ce mois-ci, quels genres dominent votre étagère, sans tenir de tableau vous-même."
-          tinted
           reverse
         >
           <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
@@ -173,6 +182,7 @@ export function LandingPage() {
         <DeepDive
           heading="Sans donner les clés."
           body="Un lien public, en lecture seule, que n'importe qui peut consulter sans créer de compte. Un visiteur connecté peut même vous suggérer un livre."
+          tinted
         >
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
             <div className="flex items-baseline justify-between border-b border-border pb-3">

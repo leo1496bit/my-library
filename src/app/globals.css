@@ -246,4 +246,54 @@
       transform: none;
     }
   }
+
+  /* Démo "Un titre suffit" (section dédiée à l'auto-remplissage) : chaque
+     champ (couverture, auteur, éditeur…) apparaît l'un après l'autre plutôt
+     que la fiche entière d'un coup, pour rendre visible ce que fait
+     l'auto-remplissage plutôt que de simplement l'affirmer. Un seul
+     minutage partagé, décalé par élément via animation-delay (voir
+     landing-autofill-demo.tsx). */
+  @keyframes landing-autofill-row {
+    0%,
+    4% {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    14%,
+    90% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    98%,
+    100% {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+  .landing-autofill-row {
+    animation: landing-autofill-row 8s ease-out infinite;
+  }
+  /* Même dessin d'animation que la recherche du héros (landing-demo-type/
+     -cursor), rejoué sur le minutage à 8s de cette démo. */
+  .landing-autofill-query {
+    animation: landing-demo-type 8s ease-in-out infinite;
+  }
+  .landing-autofill-cursor {
+    animation: landing-demo-cursor 8s steps(1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .landing-autofill-row {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .landing-autofill-query {
+      animation: none;
+      clip-path: inset(0 0 0 0);
+    }
+    .landing-autofill-cursor {
+      animation: none;
+      display: none;
+    }
+  }
 }
