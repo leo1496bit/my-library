@@ -36,7 +36,20 @@ export function formatShortDate(value: string | null | undefined): string {
   }).format(date);
 }
 
-const SHORT_MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+const SHORT_MONTHS = [
+  "Jan",
+  "Fév",
+  "Mar",
+  "Avr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Aoû",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Déc",
+];
 
 // Abrégés à largeur fixe (3 lettres) — plus lisibles que les abréviations
 // Intl (longueur variable) dans une grille de 12 colonnes étroites.
