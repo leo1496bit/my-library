@@ -67,13 +67,10 @@ export function BookList() {
   }, [books, filter, query, selectedTagIds]);
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4">
-      <div>
-        <h1 className="font-heading text-2xl text-foreground">Ma bibliothèque</h1>
-        <p className="text-sm text-muted-foreground">
-          {books ? `${books.length} livre${books.length > 1 ? "s" : ""}` : "Chargement…"}
-        </p>
-      </div>
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">
+        {books ? `${books.length} livre${books.length > 1 ? "s" : ""}` : "Chargement…"}
+      </p>
 
       <div className="relative">
         <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
