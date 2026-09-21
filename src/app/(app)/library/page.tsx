@@ -1,5 +1,10 @@
-import { BookList } from "@/components/books/book-list";
+import { Suspense } from "react";
+import { LibraryTabs } from "@/components/library/library-tabs";
 
 export default function LibraryPage() {
-  return <BookList />;
+  return (
+    <Suspense>
+      <LibraryTabs />
+    </Suspense>
+  );
 }

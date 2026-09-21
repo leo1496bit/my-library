@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Settings, Upload, User as UserIcon, Users } from "lucide-react";
+import { LogOut, Settings, Upload, User as UserIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,10 +42,6 @@ export function UserMenu({ email }: { email: string | null }) {
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem render={<Link href="/authors" />}>
-          <Users className="size-4" />
-          Auteurs
-        </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/import" />}>
           <Upload className="size-4" />
           Importer un CSV

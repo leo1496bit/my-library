@@ -30,13 +30,10 @@ export function AuthorsList() {
   }, [authors, query]);
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4">
-      <div>
-        <h1 className="font-heading text-2xl text-foreground">Auteurs</h1>
-        <p className="text-sm text-muted-foreground">
-          {authors ? `${authors.length} auteur${authors.length > 1 ? "s" : ""}` : "Chargement…"}
-        </p>
-      </div>
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">
+        {authors ? `${authors.length} auteur${authors.length > 1 ? "s" : ""}` : "Chargement…"}
+      </p>
 
       <div className="relative">
         <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
