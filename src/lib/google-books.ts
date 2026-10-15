@@ -63,6 +63,23 @@ export function extractYear(publishedDate: string | undefined): number | null {
   return match ? Number(match[0]) : null;
 }
 
+// Retire les espaces et tirets de mise en forme (ex. "978-2-07-036822-8")
+// avant d'interroger l'API ou de tester la forme d'un ISBN.
+function normalizeIsbn(isbn: string): string {
+  return isbn.replace(/[\s-]/g, "");
+}
+
+// Détecte une saisie "qui ressemble à un ISBN" (10 ou 13 chiffres, avec ou
+// sans tirets/espaces) plutôt qu'un titre — utilisé pour aiguiller la
+// recherche Quick Add vers `searchBooksByIsbn`. Même détection que servira
+// plus tard un scan de code-barres mobile, qui remplira ce même champ.
+export function looksLikeIsbn(query: string): boolean {
+  const normalized = normalizeIsbn(query.trim());
+  // ISBN-10 : 9 chiffres + un chiffre de contrôle (chiffre ou X).
+  // ISBN-13 : 13 chiffres (le chiffre de contrôle est toujours un chiffre).
+  return /^\d{9}[\dXx]$/.test(normalized) || /^\d{13}$/.test(normalized);
+}
+
 function mapVolume(item: GoogleVolumeItem): GoogleBookResult | null {
   const info = item.volumeInfo;
   if (!info?.title) return null;
@@ -121,6 +138,19 @@ export async function searchBooksByTitle(
 
   const params = new URLSearchParams({
     q: `intitle:${trimmed}`,
+    maxResults: String(maxResults),
+    printType: "books",
+  });
+
+  return fetchVolumes(params);
+}
+
+export async function searchBooksByIsbn(isbn: string, maxResults = 5): Promise<GoogleBookResult[]> {
+  const normalized = normalizeIsbn(isbn.trim());
+  if (!normalized) return [];
+
+  const params = new URLSearchParams({
+    q: `isbn:${normalized}`,
     maxResults: String(maxResults),
     printType: "books",
   });

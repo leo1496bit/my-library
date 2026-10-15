@@ -190,7 +190,8 @@ export function QuickAddSheet() {
             <DrawerHeader>
               <DrawerTitle>Ajouter un livre</DrawerTitle>
               <DrawerDescription>
-                Tapez un titre, sélectionnez l&apos;édition — le reste se remplit tout seul.
+                Tapez un titre ou un ISBN, sélectionnez l&apos;édition — le reste se remplit tout
+                seul.
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4">
@@ -198,15 +199,17 @@ export function QuickAddSheet() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Titre du livre…"
-                aria-label="Rechercher un titre"
+                placeholder="Titre ou ISBN du livre…"
+                aria-label="Rechercher un titre ou un ISBN"
               />
 
               <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
                 {trimmedQuery.length < 2 && (
                   <div className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
                     <BookText className="size-6" strokeWidth={1.5} />
-                    <p className="text-sm">Commencez à taper le titre du livre à ajouter.</p>
+                    <p className="text-sm">
+                      Commencez à taper le titre ou l&apos;ISBN du livre à ajouter.
+                    </p>
                   </div>
                 )}
 
