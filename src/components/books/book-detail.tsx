@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BookText, ChevronLeft, ImagePlus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { deleteBook, fetchBookDetail, updateBook } from "@/lib/data/books";
 import { markLoanReturned } from "@/lib/data/loans";
+import { createQuote, deleteQuote, fetchQuotesForBook } from "@/lib/data/quotes";
 import { NotFoundError } from "@/lib/data/errors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -48,6 +50,7 @@ import {
   type BookFormat,
   type BookStatus,
   type Loan,
+  type Quote,
   type Tag,
 } from "@/lib/types";
 
@@ -57,6 +60,12 @@ export function BookDetail({ id }: { id: string }) {
   const [book, setBook] = useState<Book | null | "not-found">(null);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quoteDraft, setQuoteDraft] = useState("");
+  const [quotePageDraft, setQuotePageDraft] = useState("");
+  const [addingQuote, setAddingQuote] = useState(false);
+  const [confirmDeleteQuoteId, setConfirmDeleteQuoteId] = useState<string | null>(null);
+  const confirmResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -76,10 +85,20 @@ export function BookDetail({ id }: { id: string }) {
       setTags(data.tags);
     });
 
+    fetchQuotesForBook(id).then((data) => {
+      if (!cancelled) setQuotes(data);
+    });
+
     return () => {
       cancelled = true;
     };
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      if (confirmResetTimer.current) clearTimeout(confirmResetTimer.current);
+    };
+  }, []);
 
   if (book === null) {
     return (
@@ -215,6 +234,55 @@ export function BookDetail({ id }: { id: string }) {
       if (err instanceof NotFoundError) setDeleteOpen(false);
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleAddQuote() {
+    const text = quoteDraft.trim();
+    if (!text || addingQuote) return;
+    setAddingQuote(true);
+    try {
+      const pageNumber = quotePageDraft.trim() ? Number(quotePageDraft) : null;
+      const quote = await createQuote({ book_id: id, quote_text: text, page_number: pageNumber });
+      setQuotes((prev) => [quote, ...prev]);
+      setQuoteDraft("");
+      setQuotePageDraft("");
+      toast.success("Citation ajoutée.");
+    } catch {
+      toast.error("Cette citation n'a pas pu être enregistrée.");
+    } finally {
+      setAddingQuote(false);
+    }
+  }
+
+  // Confirmation légère sans AlertDialog : un premier clic sur "Supprimer"
+  // arme le bouton ("Confirmer ?"), un second clic dans les quelques
+  // secondes qui suivent supprime pour de bon. Même esprit que le retrait
+  // d'un tag (un bouton, pas de boîte de dialogue), avec une étape de plus
+  // car une citation est un texte qu'on ne veut pas perdre par un clic
+  // distrait.
+  function handleRequestDeleteQuote(quoteId: string) {
+    if (confirmDeleteQuoteId === quoteId) {
+      if (confirmResetTimer.current) clearTimeout(confirmResetTimer.current);
+      setConfirmDeleteQuoteId(null);
+      void handleDeleteQuote(quoteId);
+      return;
+    }
+    setConfirmDeleteQuoteId(quoteId);
+    if (confirmResetTimer.current) clearTimeout(confirmResetTimer.current);
+    confirmResetTimer.current = setTimeout(() => setConfirmDeleteQuoteId(null), 3000);
+  }
+
+  async function handleDeleteQuote(quoteId: string) {
+    const previous = quotes;
+    setQuotes((prev) => prev.filter((q) => q.id !== quoteId));
+    try {
+      await deleteQuote(quoteId);
+      toast.success("Citation supprimée.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Une erreur inattendue est survenue.";
+      toast.error(message);
+      if (!(err instanceof NotFoundError)) setQuotes(previous);
     }
   }
 
@@ -394,6 +462,74 @@ export function BookDetail({ id }: { id: string }) {
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-foreground">Tags</h2>
         <TagEditor bookId={id} tags={tags} onChange={setTags} />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-medium text-foreground">Citations</h2>
+        {quotes.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {quotes.map((quote) => (
+              <div
+                key={quote.id}
+                className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground italic">« {quote.quote_text} »</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {quote.page_number != null && `p. ${quote.page_number} · `}
+                    {formatDate(quote.created_at)}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={confirmDeleteQuoteId === quote.id ? "destructive" : "ghost"}
+                  onClick={() => handleRequestDeleteQuote(quote.id)}
+                  aria-label={
+                    confirmDeleteQuoteId === quote.id
+                      ? "Confirmer la suppression de la citation"
+                      : "Supprimer la citation"
+                  }
+                  className="shrink-0"
+                >
+                  {confirmDeleteQuoteId === quote.id ? (
+                    "Confirmer ?"
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border px-3 py-2.5">
+          <Textarea
+            value={quoteDraft}
+            onChange={(e) => setQuoteDraft(e.target.value)}
+            placeholder="Une phrase à retenir…"
+            rows={2}
+            aria-label="Nouvelle citation"
+          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              value={quotePageDraft}
+              onChange={(e) => setQuotePageDraft(e.target.value)}
+              placeholder="Page (optionnel)"
+              aria-label="Numéro de page"
+              className="w-36"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAddQuote}
+              disabled={addingQuote || !quoteDraft.trim()}
+              className="ml-auto"
+            >
+              Ajouter
+            </Button>
+          </div>
+        </div>
       </section>
 
       <section className="flex flex-col gap-2">

@@ -86,6 +86,18 @@ export interface ReadingGoal {
   target_books: number;
 }
 
+export interface Quote {
+  id: string;
+  book_id: string;
+  user_id: string;
+  quote_text: string;
+  page_number: number | null;
+  created_at: string;
+}
+
+export type QuoteInsert = Pick<Quote, "book_id" | "quote_text"> &
+  Partial<Pick<Quote, "page_number">>;
+
 // Livre avec ses relations chargées côté client (prêt actif, tags).
 export interface BookWithRelations extends Book {
   active_loan?: Loan | null;
