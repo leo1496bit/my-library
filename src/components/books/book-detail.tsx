@@ -283,7 +283,8 @@ export function BookDetail({ id }: { id: string }) {
             key={`author-${book.id}`}
             placeholder="Auteur"
             onBlur={(e) =>
-              e.target.value !== (book.author ?? "") && saveField("author", e.target.value || null)
+              e.target.value !== (book.author ?? "") &&
+              saveField("author", e.target.value || null, "Auteur mis à jour.")
             }
             className="text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/60"
             aria-label="Auteur"
@@ -317,40 +318,44 @@ export function BookDetail({ id }: { id: string }) {
           <DetailField
             label="Genre"
             value={book.genre ?? ""}
-            onCommit={(v) => saveField("genre", v || null)}
+            onCommit={(v) => saveField("genre", v || null, "Genre mis à jour.")}
           />
           <DetailField
             label="Éditeur"
             value={book.publisher ?? ""}
-            onCommit={(v) => saveField("publisher", v || null)}
+            onCommit={(v) => saveField("publisher", v || null, "Éditeur mis à jour.")}
           />
           <DetailField
             label="Année"
             type="number"
             value={book.published_year?.toString() ?? ""}
-            onCommit={(v) => saveField("published_year", v ? Number(v) : null)}
+            onCommit={(v) =>
+              saveField("published_year", v ? Number(v) : null, "Année mise à jour.")
+            }
           />
           <DetailField
             label="Pages"
             type="number"
             value={book.page_count?.toString() ?? ""}
-            onCommit={(v) => saveField("page_count", v ? Number(v) : null)}
+            onCommit={(v) =>
+              saveField("page_count", v ? Number(v) : null, "Nombre de pages mis à jour.")
+            }
           />
           <DetailField
             label="ISBN"
             value={book.isbn ?? ""}
-            onCommit={(v) => saveField("isbn", v || null)}
+            onCommit={(v) => saveField("isbn", v || null, "ISBN mis à jour.")}
           />
           <DetailField
             label="Langue"
             value={book.language ?? ""}
-            onCommit={(v) => saveField("language", v || null)}
+            onCommit={(v) => saveField("language", v || null, "Langue mise à jour.")}
           />
           <DetailField
             label="Emplacement"
             value={book.location ?? ""}
             placeholder="Étagère salon…"
-            onCommit={(v) => saveField("location", v || null)}
+            onCommit={(v) => saveField("location", v || null, "Emplacement mis à jour.")}
           />
           <div className="flex items-center justify-between gap-3 py-2.5">
             <span className="text-sm text-muted-foreground">Format</span>
@@ -383,7 +388,8 @@ export function BookDetail({ id }: { id: string }) {
           placeholder="Vos impressions, citations à retenir…"
           rows={4}
           onBlur={(e) =>
-            e.target.value !== (book.notes ?? "") && saveField("notes", e.target.value || null)
+            e.target.value !== (book.notes ?? "") &&
+            saveField("notes", e.target.value || null, "Notes enregistrées.")
           }
         />
       </section>
