@@ -9,7 +9,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { NotFoundError } from "@/lib/data/errors";
-import type { Book, BookWithRelations, Loan, Tag } from "@/lib/types";
+import type { Book, BookInsert, BookWithRelations, Loan, Tag } from "@/lib/types";
 
 interface BookTagRow {
   book_id: string;
@@ -91,6 +91,20 @@ export async function fetchBookDetail(id: string): Promise<BookDetailData | null
     (loans ?? []) as Loan[],
     (tagRows ?? []) as unknown as { tags: Tag | null }[],
   );
+}
+
+/** Crée un livre et renvoie la ligne insérée. `title` est le seul champ
+ * obligatoire (voir `BookInsert`) — pensé pour les entrées minimales comme
+ * l'ajout rapide d'une envie, où tout le reste se complète plus tard depuis
+ * la fiche du livre. Lève une erreur en cas d'échec. */
+export async function createBook(book: BookInsert): Promise<Book> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("books").insert(book).select().single();
+  if (error || !data) {
+    console.error("createBook failed", { book, error });
+    throw new Error(error?.message || "Le livre n'a pas pu être ajouté.");
+  }
+  return data as Book;
 }
 
 /** Met à jour un ou plusieurs champs d'un livre et renvoie la ligne à jour.

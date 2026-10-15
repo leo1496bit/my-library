@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { LibraryBig, SearchIcon, TagIcon } from "lucide-react";
-import { fetchBooksWithRelations } from "@/lib/data/books";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Loader2, LibraryBig, Plus, SearchIcon, TagIcon } from "lucide-react";
+import { createBook, fetchBooksWithRelations } from "@/lib/data/books";
 import { useAddBookSheet } from "@/components/add/add-book-context";
 import { BookCard } from "@/components/books/book-card";
 import { Input } from "@/components/ui/input";
@@ -17,11 +18,13 @@ const FILTERS = [
 ] as const;
 
 export function BookList() {
-  const { addedTick, openSheet } = useAddBookSheet();
+  const { addedTick, openSheet, notifyAdded } = useAddBookSheet();
   const [books, setBooks] = useState<BookWithRelations[] | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["value"]>("all");
   const [query, setQuery] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [wishTitle, setWishTitle] = useState("");
+  const [addingWish, startAddingWish] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +54,26 @@ export function BookList() {
     });
   }
 
+  // Ajout ultra-léger d'une "envie" : juste un titre, statut `to_buy`, sans
+  // passer par le sheet Quick Add (recherche Google Books, confirmation de
+  // statut...). Ne ferme/ouvre rien et ne redirige pas, pour pouvoir
+  // enchaîner plusieurs titres d'affilée.
+  function handleAddWish(e: React.FormEvent) {
+    e.preventDefault();
+    const title = wishTitle.trim();
+    if (!title) return;
+    startAddingWish(async () => {
+      try {
+        const book = await createBook({ title, status: "to_buy" });
+        toast.success(`« ${book.title} » ajouté à vos envies.`);
+        setWishTitle("");
+        notifyAdded();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Impossible d'ajouter cette envie.");
+      }
+    });
+  }
+
   const filtered = useMemo(() => {
     if (!books) return null;
     const q = query.trim().toLowerCase();
@@ -72,14 +95,35 @@ export function BookList() {
         {books ? `${books.length} livre${books.length > 1 ? "s" : ""}` : "Chargement…"}
       </p>
 
-      <div className="relative">
-        <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un titre, un auteur…"
-          className="pl-9"
-        />
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un titre, un auteur…"
+            className="pl-9"
+          />
+        </div>
+
+        <form onSubmit={handleAddWish} className="flex gap-2 sm:flex-1">
+          <Input
+            value={wishTitle}
+            onChange={(e) => setWishTitle(e.target.value)}
+            placeholder="Ajouter une envie : titre du livre…"
+            aria-label="Ajouter une envie par titre"
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={addingWish || !wishTitle.trim()}
+            aria-label="Ajouter une envie"
+          >
+            {addingWish ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+            Envie
+          </Button>
+        </form>
       </div>
 
       <div className="relative">
