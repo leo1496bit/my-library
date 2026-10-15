@@ -101,3 +101,48 @@ export function finishedThisYear(books: StatsSourceBook[], year: number): number
   return books.filter((b) => b.date_finished && new Date(b.date_finished).getFullYear() === year)
     .length;
 }
+
+// Sous-ensemble distinct de StatsSourceBook : `updated_at` existe sur `Book`
+// (timestamptz mis à jour automatiquement par le trigger `set_books_updated_at`,
+// voir supabase/migrations/0001_init.sql) mais n'est pas exposé par
+// get_shared_book(s) (`SharedBook`, vie privée — comme Reading Goal, le
+// streak n'a pas vocation à apparaître sur une Bibliothèque partagée). On
+// l'ajoute donc comme un type à part plutôt que d'étendre StatsSourceBook,
+// pour ne pas casser sa compatibilité avec `SharedBook`.
+export interface StreakSourceBook {
+  updated_at: string;
+}
+
+function dayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+/**
+ * Nombre de jours consécutifs jusqu'à aujourd'hui (ou jusqu'à hier si rien
+ * n'a été modifié aujourd'hui) où au moins un livre a été modifié — un
+ * `books.update(...)` (statut, note, notes, champ de détail…) met à jour
+ * `updated_at` automatiquement. C'est un vrai timestamptz (comme
+ * `returned_at`, voir le commentaire en tête de src/lib/format.ts) : on le
+ * regroupe donc par jour civil dans le fuseau du lecteur, pas en UTC fixe.
+ */
+export function readingStreak(books: StreakSourceBook[], today = new Date()): number {
+  const activeDays = new Set<string>();
+  for (const book of books) {
+    const date = new Date(book.updated_at);
+    if (Number.isNaN(date.getTime())) continue;
+    activeDays.add(dayKey(date));
+  }
+
+  const cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (!activeDays.has(dayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!activeDays.has(dayKey(cursor))) return 0;
+  }
+
+  let streak = 0;
+  while (activeDays.has(dayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}

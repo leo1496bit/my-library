@@ -5,6 +5,7 @@ import {
   estimatedPagesRead,
   finishedPerMonth,
   finishedThisYear,
+  readingStreak,
   topAuthors,
   topGenres,
 } from "@/lib/stats";
@@ -240,5 +241,69 @@ describe("finishedThisYear", () => {
     expect(finishedThisYear(books, 2024)).toBe(2);
     expect(finishedThisYear(books, 2023)).toBe(1);
     expect(finishedThisYear(books, 2022)).toBe(0);
+  });
+});
+
+describe("readingStreak", () => {
+  // "Aujourd'hui" fixé au 15 mars 2024 pour tous les cas ci-dessous.
+  const today = new Date(2024, 2, 15);
+
+  it("returns 0 for empty input", () => {
+    expect(readingStreak([], today)).toBe(0);
+  });
+
+  it("counts a streak of several consecutive days ending today", () => {
+    const books = [
+      { updated_at: "2024-03-13T10:00:00.000Z" },
+      { updated_at: "2024-03-14T08:00:00.000Z" },
+      { updated_at: "2024-03-15T22:00:00.000Z" },
+    ];
+    expect(readingStreak(books, today)).toBe(3);
+  });
+
+  it("still counts the streak as ending yesterday when nothing happened today", () => {
+    const books = [
+      { updated_at: "2024-03-13T10:00:00.000Z" },
+      { updated_at: "2024-03-14T08:00:00.000Z" },
+    ];
+    expect(readingStreak(books, today)).toBe(2);
+  });
+
+  it("is broken by a day with no activity", () => {
+    const books = [
+      { updated_at: "2024-03-10T10:00:00.000Z" },
+      // Gap on the 11th through 13th.
+      { updated_at: "2024-03-14T08:00:00.000Z" },
+      { updated_at: "2024-03-15T08:00:00.000Z" },
+    ];
+    expect(readingStreak(books, today)).toBe(2);
+  });
+
+  it("returns 0 when nothing happened today or yesterday", () => {
+    const books = [{ updated_at: "2024-03-10T10:00:00.000Z" }];
+    expect(readingStreak(books, today)).toBe(0);
+  });
+
+  it("counts multiple updates on the same day as a single day", () => {
+    const books = [
+      { updated_at: "2024-03-15T01:00:00.000Z" },
+      { updated_at: "2024-03-15T23:00:00.000Z" },
+    ];
+    expect(readingStreak(books, today)).toBe(1);
+  });
+
+  it("ignores books with an invalid updated_at", () => {
+    const books = [{ updated_at: "not-a-date" }, { updated_at: "2024-03-15T10:00:00.000Z" }];
+    expect(readingStreak(books, today)).toBe(1);
+  });
+
+  it("defaults `today` to the current date", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(today);
+    try {
+      expect(readingStreak([{ updated_at: "2024-03-15T10:00:00.000Z" }])).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
