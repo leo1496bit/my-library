@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Download, LogOut, Sparkles, Upload, User as UserIcon } from "lucide-react";
+import { Download, LogOut, Quote, Sparkles, Upload, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -80,6 +80,10 @@ export function UserMenu({ email }: { email: string | null }) {
         <DropdownMenuItem render={<Link href="/recommendations" />}>
           <Sparkles className="size-4" />
           Idées
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/quotes" />}>
+          <Quote className="size-4" />
+          Citations
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action={signOutAction}>
