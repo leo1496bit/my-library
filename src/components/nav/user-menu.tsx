@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Settings, Upload, User as UserIcon } from "lucide-react";
+import { Download, LogOut, Settings, Upload, User as UserIcon } from "lucide-react";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/lib/actions/auth";
+import { fetchBooksWithRelations } from "@/lib/data/books";
+import { booksToCsv } from "@/lib/csv";
+import { todayIso } from "@/lib/format";
+
+// Génération + téléchargement du CSV entièrement côté client : pas de route
+// API dédiée, fetchBooksWithRelations() est déjà appelable depuis le
+// navigateur. Le BOM UTF-8 évite qu'Excel n'affiche mal les caractères
+// accentués (Éditeur, Terminé...) à l'ouverture du fichier.
+async function handleExport() {
+  try {
+    const books = await fetchBooksWithRelations();
+    const csv = booksToCsv(books);
+    const blob = new Blob(["﻿", csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ma-bibliotheque-${todayIso()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("CSV export failed", error);
+    toast.error("L'export a échoué. Réessayez.");
+  }
+}
 
 export function UserMenu({ email }: { email: string | null }) {
   return (
@@ -45,6 +72,10 @@ export function UserMenu({ email }: { email: string | null }) {
         <DropdownMenuItem render={<Link href="/import" />}>
           <Upload className="size-4" />
           Importer un CSV
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleExport}>
+          <Download className="size-4" />
+          Exporter en CSV
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>
           <Settings className="size-4" />
