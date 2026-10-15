@@ -82,43 +82,55 @@ export function BookList() {
         />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={cn(
-              "shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors",
-              filter === f.value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="relative">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
+                filter === f.value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-r from-transparent to-background"
+        />
       </div>
 
       {availableTags.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          <TagIcon className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
-          {availableTags.map((tag) => {
-            const active = selectedTagIds.has(tag.id);
-            return (
-              <button
-                key={tag.id}
-                onClick={() => toggleTag(tag.id)}
-                className={cn(
-                  "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
-                  active
-                    ? "border-accent bg-accent text-accent-foreground"
-                    : "border-border bg-card text-muted-foreground",
-                )}
-              >
-                {tag.name}
-              </button>
-            );
-          })}
+        <div className="relative">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <TagIcon className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+            {availableTags.map((tag) => {
+              const active = selectedTagIds.has(tag.id);
+              return (
+                <button
+                  key={tag.id}
+                  onClick={() => toggleTag(tag.id)}
+                  className={cn(
+                    "shrink-0 rounded-full border px-3 py-1 text-xs outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
+                    active
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-border bg-card text-muted-foreground",
+                  )}
+                >
+                  {tag.name}
+                </button>
+              );
+            })}
+          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-r from-transparent to-background"
+          />
         </div>
       )}
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BookText, ChevronLeft, ImagePlus, MoreVertical, Trash2 } from "lucide-react";
+import { BookText, ChevronLeft, ImagePlus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { deleteBook, fetchBookDetail, updateBook } from "@/lib/data/books";
 import { markLoanReturned } from "@/lib/data/loans";
 import { NotFoundError } from "@/lib/data/errors";
@@ -274,9 +274,13 @@ export function BookDetail({ id }: { id: string }) {
             type="button"
             onClick={() => setMatchDialog("title")}
             aria-label="Corriger les informations du livre depuis Google Books"
-            className="w-fit min-w-0 text-left font-heading text-xl leading-snug text-foreground outline-none"
+            className="group/title w-fit min-w-0 rounded-sm text-left font-heading text-xl leading-snug text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {book.title}
+            <Pencil
+              className="ml-1.5 inline-block size-3.5 shrink-0 -translate-y-px text-muted-foreground opacity-0 transition-opacity group-hover/title:opacity-100 group-focus-visible/title:opacity-100"
+              strokeWidth={2}
+            />
           </button>
           <input
             defaultValue={book.author ?? ""}

@@ -41,7 +41,7 @@ export function LibraryTabs() {
             aria-selected={tab === t.value}
             onClick={() => setTab(t.value)}
             className={cn(
-              "rounded-full px-4 py-1.5 text-sm transition-colors",
+              "rounded-full px-4 py-1.5 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
               tab === t.value
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
