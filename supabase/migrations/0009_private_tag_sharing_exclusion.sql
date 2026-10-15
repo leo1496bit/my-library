@@ -37,7 +37,9 @@ returns table (
   google_books_id text,
   date_added timestamptz,
   date_started date,
-  date_finished date
+  date_finished date,
+  series_name text,
+  series_index integer
 )
 security definer
 set search_path = ''
@@ -48,7 +50,7 @@ as $$
     b.id, b.user_id, b.title, b.author, b.genre, b.isbn, b.cover_url,
     b.publisher, b.published_year, b.language, b.page_count, b.format,
     b.status, b.rating, b.google_books_id, b.date_added,
-    b.date_started, b.date_finished
+    b.date_started, b.date_finished, b.series_name, b.series_index
   from public.books b
   where b.user_id = owner_id
     and exists (
@@ -84,7 +86,9 @@ returns table (
   google_books_id text,
   date_added timestamptz,
   date_started date,
-  date_finished date
+  date_finished date,
+  series_name text,
+  series_index integer
 )
 security definer
 set search_path = ''
@@ -95,7 +99,7 @@ as $$
     b.id, b.user_id, b.title, b.author, b.genre, b.isbn, b.cover_url,
     b.publisher, b.published_year, b.language, b.page_count, b.format,
     b.status, b.rating, b.google_books_id, b.date_added,
-    b.date_started, b.date_finished
+    b.date_started, b.date_finished, b.series_name, b.series_index
   from public.books b
   where b.id = p_book_id
     and b.user_id = p_owner_id
