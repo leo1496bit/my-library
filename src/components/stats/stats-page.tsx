@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BarChart3 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useAddBookSheet } from "@/components/add/add-book-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { ReadingGoalCard } from "@/components/stats/reading-goal-card";
 import { MonthlyChart } from "@/components/stats/monthly-chart";
 import { ProportionBar } from "@/components/stats/proportion-bar";
@@ -20,6 +23,7 @@ import {
 import type { Book } from "@/lib/types";
 
 export function StatsPage() {
+  const { addedTick, openSheet } = useAddBookSheet();
   const [books, setBooks] = useState<Book[] | null>(null);
 
   useEffect(() => {
@@ -28,7 +32,7 @@ export function StatsPage() {
       .from("books")
       .select("*")
       .then(({ data }) => setBooks((data ?? []) as Book[]));
-  }, []);
+  }, [addedTick]);
 
   if (!books) {
     return (
@@ -37,6 +41,21 @@ export function StatsPage() {
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-32 w-full rounded-lg" />
         ))}
+      </div>
+    );
+  }
+
+  if (books.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 px-4 pt-4">
+        <h1 className="font-heading text-2xl text-foreground">Statistiques</h1>
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <BarChart3 className="size-8 text-muted-foreground" strokeWidth={1.5} />
+          <p className="max-w-[28ch] text-sm text-muted-foreground">
+            Vos statistiques de lecture apparaîtront ici dès que vous aurez ajouté des livres.
+          </p>
+          <Button onClick={openSheet}>Ajouter un livre</Button>
+        </div>
       </div>
     );
   }
