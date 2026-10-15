@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractIsbn, extractYear, upgradeCoverUrl } from "@/lib/google-books";
+import { extractIsbn, extractYear, looksLikeIsbn, upgradeCoverUrl } from "@/lib/google-books";
 
 describe("extractIsbn", () => {
   it("returns null for undefined or empty identifiers", () => {
@@ -71,5 +71,52 @@ describe("upgradeCoverUrl", () => {
   it("leaves an already-https URL without zoom=1 unchanged apart from the protocol", () => {
     const result = upgradeCoverUrl("https://books.google.com/books/content?id=abc&zoom=3");
     expect(result).toBe("https://books.google.com/books/content?id=abc&zoom=3");
+  });
+});
+
+describe("looksLikeIsbn", () => {
+  it("recognizes a bare ISBN-13", () => {
+    expect(looksLikeIsbn("9782070368228")).toBe(true);
+  });
+
+  it("recognizes an ISBN-13 with hyphens", () => {
+    expect(looksLikeIsbn("978-2-07-036822-8")).toBe(true);
+  });
+
+  it("recognizes an ISBN-13 with spaces", () => {
+    expect(looksLikeIsbn("978 2 07 036822 8")).toBe(true);
+  });
+
+  it("recognizes a bare ISBN-10", () => {
+    expect(looksLikeIsbn("2070368228")).toBe(true);
+  });
+
+  it("recognizes an ISBN-10 with hyphens", () => {
+    expect(looksLikeIsbn("2-07-036822-8")).toBe(true);
+  });
+
+  it("recognizes an ISBN-10 ending in an X check digit", () => {
+    expect(looksLikeIsbn("044101359X")).toBe(true);
+  });
+
+  it("rejects a book title", () => {
+    expect(looksLikeIsbn("Le Petit Prince")).toBe(false);
+  });
+
+  it("rejects a short numeric query", () => {
+    expect(looksLikeIsbn("12345")).toBe(false);
+  });
+
+  it("rejects a numeric query of the wrong length", () => {
+    expect(looksLikeIsbn("123456789012")).toBe(false);
+  });
+
+  it("rejects an empty or whitespace-only query", () => {
+    expect(looksLikeIsbn("")).toBe(false);
+    expect(looksLikeIsbn("   ")).toBe(false);
+  });
+
+  it("rejects digits mixed with non-ISBN letters", () => {
+    expect(looksLikeIsbn("isbn 9782070368228")).toBe(false);
   });
 });

@@ -1,15 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { searchBooksByTitle } from "@/lib/google-books";
+import { looksLikeIsbn, searchBooksByIsbn, searchBooksByTitle } from "@/lib/google-books";
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q") ?? "";
+  const trimmed = q.trim();
 
-  if (!q.trim()) {
+  if (!trimmed) {
     return NextResponse.json({ results: [] });
   }
 
   try {
-    const results = await searchBooksByTitle(q, 10);
+    // Une saisie qui ressemble à un ISBN (Quick Add, ou futur scan de
+    // code-barres mobile qui remplira ce même champ) passe par la recherche
+    // ISBN plutôt que par le titre, bien plus précise pour cette forme.
+    const results = looksLikeIsbn(trimmed)
+      ? await searchBooksByIsbn(trimmed, 10)
+      : await searchBooksByTitle(trimmed, 10);
     return NextResponse.json({ results });
   } catch (error) {
     console.error("Google Books search failed", error);
