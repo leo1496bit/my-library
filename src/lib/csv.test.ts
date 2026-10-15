@@ -208,6 +208,8 @@ function makeExportBook(overrides: Partial<BookWithRelations> = {}): BookWithRel
     date_finished: "2026-01-20",
     created_at: "2026-01-01T12:34:56Z",
     updated_at: "2026-01-20T00:00:00Z",
+    series_name: null,
+    series_index: null,
     active_loan: null,
     tags: [],
     ...overrides,

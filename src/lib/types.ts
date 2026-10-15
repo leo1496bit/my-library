@@ -46,6 +46,8 @@ export interface Book {
   date_finished: string | null;
   created_at: string;
   updated_at: string;
+  series_name: string | null;
+  series_index: number | null;
 }
 
 // Statuts proposés dans le flux d'ajout rapide (chips) — sous-ensemble de
@@ -98,7 +100,8 @@ export interface Profile {
 }
 
 // Colonnes renvoyées par les fonctions publiques get_shared_book(s) — sans
-// notes ni location (vie privée), voir supabase/migrations/0006_public_book_details_and_stats.sql.
+// notes ni location (vie privée), voir supabase/migrations/0006_public_book_details_and_stats.sql
+// et 0008_add_series_fields.sql (series_name/series_index, même logique que genre/author).
 export interface SharedBook {
   id: string;
   user_id: string;
@@ -118,6 +121,8 @@ export interface SharedBook {
   date_added: string;
   date_started: string | null;
   date_finished: string | null;
+  series_name: string | null;
+  series_index: number | null;
   tags?: Tag[];
 }
 

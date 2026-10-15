@@ -3,11 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookList } from "@/components/books/book-list";
 import { AuthorsList } from "@/components/authors/authors-list";
+import { SeriesList } from "@/components/series/series-list";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { value: "books", label: "Livres" },
   { value: "authors", label: "Auteurs" },
+  { value: "series", label: "Séries" },
 ] as const;
 
 type Tab = (typeof TABS)[number]["value"];
@@ -15,13 +17,14 @@ type Tab = (typeof TABS)[number]["value"];
 export function LibraryTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab: Tab = searchParams.get("tab") === "authors" ? "authors" : "books";
+  const tabParam = searchParams.get("tab");
+  const tab: Tab = tabParam === "authors" || tabParam === "series" ? tabParam : "books";
 
   // `replace` (pas `push`) : basculer d'onglet ne doit pas empiler d'entrées
-  // d'historique — un clic sur un auteur depuis l'onglet Auteurs, suivi de
+  // d'historique — un clic sur un auteur/série depuis son onglet, suivi de
   // "Retour", doit ramener directement ici avec le bon onglet sélectionné.
   function setTab(next: Tab) {
-    router.replace(next === "books" ? "/library" : "/library?tab=authors");
+    router.replace(next === "books" ? "/library" : `/library?tab=${next}`);
   }
 
   return (
@@ -52,7 +55,9 @@ export function LibraryTabs() {
         ))}
       </div>
 
-      {tab === "books" ? <BookList /> : <AuthorsList />}
+      {tab === "books" && <BookList />}
+      {tab === "authors" && <AuthorsList />}
+      {tab === "series" && <SeriesList />}
     </div>
   );
 }

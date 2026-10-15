@@ -361,6 +361,18 @@ export function BookDetail({ id }: { id: string }) {
             placeholder="Étagère salon…"
             onCommit={(v) => saveField("location", v || null, "Emplacement mis à jour.")}
           />
+          <DetailField
+            label="Série"
+            value={book.series_name ?? ""}
+            placeholder="Harry Potter…"
+            onCommit={(v) => saveField("series_name", v || null, "Série mise à jour.")}
+          />
+          <DetailField
+            label="Tome"
+            type="number"
+            value={book.series_index?.toString() ?? ""}
+            onCommit={(v) => saveField("series_index", v ? Number(v) : null, "Tome mis à jour.")}
+          />
           <div className="flex items-center justify-between gap-3 py-2.5">
             <span className="text-sm text-muted-foreground">Format</span>
             <Select value={book.format} onValueChange={(v) => handleFormatChange(v as BookFormat)}>
