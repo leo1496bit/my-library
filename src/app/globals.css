@@ -56,10 +56,13 @@
 /*
   Bibliothèque personnelle — identité "fiche de catalogue" (inchangée),
   reteintée en bleu/rouge sur un fond clair et frais plutôt que le vert/
-  laiton sur papier chaud d'origine. Bleu encre en couleur de chrome,
-  rouge réservé à l'accent (tags, actions secondaires) — le tampon de prêt
-  (--loan) reste sa propre nuance de rouge, plus sombre, pour ne jamais se
-  confondre avec les puces de tag à l'accent.
+  laiton sur papier chaud d'origine. Bleu encre en couleur de chrome, rouge
+  réservé exclusivement au danger (--destructive). --accent est un doré/
+  ambré distinct (tags, étoiles de notation, liens de mise en avant) —
+  avant, il partageait la même valeur que --destructive, ce qui faisait
+  lire un tag ou un lien comme une alerte. Le tampon de prêt (--loan)
+  reste sa propre nuance de rouge, plus sombre, pour ne jamais se
+  confondre avec le rouge de danger.
 */
 :root {
   --background: #f6f8fc;
@@ -74,8 +77,8 @@
   --secondary-foreground: #17213e;
   --muted: #eef1f7;
   --muted-foreground: #5b6478;
-  --accent: #d2293d;
-  --accent-foreground: #4a0e14;
+  --accent: #9a5f08;
+  --accent-foreground: #3a2403;
   --destructive: #d2293d;
   --border: #dee4f0;
   --input: #dee4f0;
@@ -116,8 +119,8 @@
   --secondary-foreground: #e8ebf4;
   --muted: #1d2230;
   --muted-foreground: #9aa3b8;
-  --accent: #e15468;
-  --accent-foreground: #2a0a0e;
+  --accent: #d99a2e;
+  --accent-foreground: #2a1c05;
   --destructive: #e15468;
   --border: #2a3040;
   --input: #2a3040;
