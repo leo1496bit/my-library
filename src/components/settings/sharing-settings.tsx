@@ -151,6 +151,10 @@ export function SharingSettings() {
             Visible sans compte, en lecture seule — un visiteur connecté à son propre compte peut
             suggérer un livre vers sa bibliothèque, jamais modifier la vôtre.
           </p>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Astuce : taguez un livre <span className="font-medium">Privé</span> pour qu&apos;il
+            n&apos;apparaisse jamais sur votre lien public, même quand le partage est activé.
+          </p>
         </div>
         <Switch checked={enabled} onCheckedChange={handleToggle} disabled={pending} />
       </div>

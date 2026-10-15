@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookText } from "lucide-react";
+import { BookText, EyeOff } from "lucide-react";
 import { StatusBadge } from "@/components/books/status-badge";
 import { LoanBadge } from "@/components/books/loan-badge";
 import { RatingStars } from "@/components/books/rating-stars";
@@ -38,8 +38,14 @@ export function BookCard({ book }: { book: BookWithRelations }) {
             {book.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-[11px] text-accent-foreground dark:text-accent"
+                className={
+                  tag.name === "Privé"
+                    ? "inline-flex items-center gap-1 rounded-full border border-muted-foreground/25 bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                    : "rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 text-[11px] text-accent-foreground dark:text-accent"
+                }
+                title={tag.name === "Privé" ? "N'apparaît jamais sur votre lien public" : undefined}
               >
+                {tag.name === "Privé" && <EyeOff className="size-3" strokeWidth={1.75} />}
                 {tag.name}
               </span>
             ))}
