@@ -26,6 +26,8 @@ function makeBook(overrides: Partial<Book> = {}): BookWithRelations {
     date_finished: null,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
+    series_name: null,
+    series_index: null,
     active_loan: null,
     tags: [],
     ...overrides,

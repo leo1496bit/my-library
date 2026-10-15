@@ -103,6 +103,8 @@ export function PublicBookDetail({
 
   const details: { label: string; value: string }[] = [
     { label: "Genre", value: book.genre ?? "—" },
+    { label: "Série", value: book.series_name ?? "—" },
+    { label: "Tome", value: book.series_index?.toString() ?? "—" },
     { label: "Éditeur", value: book.publisher ?? "—" },
     { label: "Année", value: book.published_year?.toString() ?? "—" },
     { label: "Pages", value: book.page_count?.toString() ?? "—" },
