@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Flame } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAddBookSheet } from "@/components/add/add-book-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,7 @@ import {
   estimatedPagesRead,
   finishedPerMonth,
   finishedThisYear,
+  readingStreak,
   topAuthors,
   topGenres,
 } from "@/lib/stats";
@@ -62,6 +63,7 @@ export function StatsPage() {
 
   const year = new Date().getFullYear();
   const pages = estimatedPagesRead(books);
+  const streak = readingStreak(books);
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
@@ -71,6 +73,16 @@ export function StatsPage() {
           {books.length} livre{books.length > 1 ? "s" : ""} au total
         </p>
       </div>
+
+      {streak > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-4">
+          <Flame className="size-5 text-orange-500" strokeWidth={2} />
+          <p className="text-sm text-foreground">
+            <span className="font-heading text-lg">{streak}</span> jour
+            {streak > 1 ? "s" : ""} de suite
+          </p>
+        </div>
+      )}
 
       <ReadingGoalCard year={year} finished={finishedThisYear(books, year)} />
 
