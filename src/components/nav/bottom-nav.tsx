@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Repeat2, BarChart3, Sparkles } from "lucide-react";
+import { BookOpen, Repeat2, BarChart3, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/library", label: "Bibliothèque", icon: BookOpen },
   { href: "/loans", label: "Prêts", icon: Repeat2 },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/recommendations", label: "Idées", icon: Sparkles },
+  { href: "/settings", label: "Partage", icon: Share2 },
 ] as const;
 
 export function BottomNav() {
