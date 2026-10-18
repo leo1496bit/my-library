@@ -102,6 +102,15 @@ export function finishedThisYear(books: StatsSourceBook[], year: number): number
     .length;
 }
 
+/** Comme `estimatedPagesRead`, mais uniquement les livres terminés dans `year`
+ * (même filtre que `finishedThisYear`) — alimente l'objectif de lecture en
+ * pages, qui est annuel comme l'objectif en nombre de livres. */
+export function pagesReadThisYear(books: StatsSourceBook[], year: number): number {
+  return books
+    .filter((b) => b.date_finished && new Date(b.date_finished).getFullYear() === year)
+    .reduce((sum, b) => sum + (b.page_count ?? 0), 0);
+}
+
 // Sous-ensemble distinct de StatsSourceBook : `updated_at` existe sur `Book`
 // (timestamptz mis à jour automatiquement par le trigger `set_books_updated_at`,
 // voir supabase/migrations/0001_init.sql) mais n'est pas exposé par

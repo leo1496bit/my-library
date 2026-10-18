@@ -27,8 +27,9 @@ refer to them consistently instead of drifting into implementation names.
   Many-to-many via the `book_tags` join. Used to filter the library, on top
   of the auto-detected Genre.
 - **Reading Goal** — a per-year target number of Books to finish, shown
-  against the count of Books actually finished that year. Personal, never
-  exposed on a Shared Library.
+  against the count of Books actually finished that year, plus an optional
+  target number of Pages read that year (either target can be left unset).
+  Personal, never exposed on a Shared Library.
 
 ## Sharing
 

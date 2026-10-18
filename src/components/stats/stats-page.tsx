@@ -17,6 +17,7 @@ import {
   estimatedPagesRead,
   finishedPerMonth,
   finishedThisYear,
+  pagesReadThisYear,
   readingStreak,
   topAuthors,
   topGenres,
@@ -84,7 +85,11 @@ export function StatsPage() {
         </div>
       )}
 
-      <ReadingGoalCard year={year} finished={finishedThisYear(books, year)} />
+      <ReadingGoalCard
+        year={year}
+        finished={finishedThisYear(books, year)}
+        pagesRead={pagesReadThisYear(books, year)}
+      />
 
       <StatsSection title="Rythme de lecture" subtitle="Livres terminés par mois">
         <MonthlyChart data={finishedPerMonth(books)} />

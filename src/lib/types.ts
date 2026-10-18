@@ -84,6 +84,7 @@ export interface ReadingGoal {
   user_id: string;
   year: number;
   target_books: number;
+  target_pages: number | null;
 }
 
 export interface Quote {

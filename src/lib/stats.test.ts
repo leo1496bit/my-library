@@ -5,6 +5,7 @@ import {
   estimatedPagesRead,
   finishedPerMonth,
   finishedThisYear,
+  pagesReadThisYear,
   readingStreak,
   topAuthors,
   topGenres,
@@ -243,6 +244,33 @@ describe("finishedThisYear", () => {
     expect(finishedThisYear(books, 2024)).toBe(2);
     expect(finishedThisYear(books, 2023)).toBe(1);
     expect(finishedThisYear(books, 2022)).toBe(0);
+  });
+});
+
+describe("pagesReadThisYear", () => {
+  it("returns 0 for empty input", () => {
+    expect(pagesReadThisYear([], 2024)).toBe(0);
+  });
+
+  it("sums page_count only for books finished in the given year", () => {
+    const books = [
+      makeBook({ date_finished: "2024-06-15", page_count: 300 }),
+      makeBook({ date_finished: "2023-06-15", page_count: 400 }),
+      makeBook({ date_finished: "2024-11-30", page_count: 200 }),
+      makeBook({ date_finished: null, page_count: 500 }),
+    ];
+    expect(pagesReadThisYear(books, 2024)).toBe(500);
+    expect(pagesReadThisYear(books, 2023)).toBe(400);
+    expect(pagesReadThisYear(books, 2022)).toBe(0);
+  });
+
+  it("treats null/undefined page_count as 0", () => {
+    const books = [
+      makeBook({ date_finished: "2024-06-15", page_count: null }),
+      makeBook({ date_finished: "2024-07-15", page_count: undefined }),
+      makeBook({ date_finished: "2024-08-15", page_count: 150 }),
+    ];
+    expect(pagesReadThisYear(books, 2024)).toBe(150);
   });
 });
 
