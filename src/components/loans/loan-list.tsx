@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/format";
+import { isOverdue } from "@/lib/loans";
+import { cn } from "@/lib/utils";
 
 export function LoanList() {
   const [loans, setLoans] = useState<LoanWithBook[] | null>(null);
@@ -90,17 +92,21 @@ export function LoanList() {
 }
 
 function LoanRow({ loan, onReturn }: { loan: LoanWithBook; onReturn?: () => void }) {
+  const overdue = isOverdue(loan);
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5">
       <Link href={loan.books ? `/books/${loan.books.id}` : "#"} className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">
-          {loan.books?.title ?? "Livre supprimé"}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="truncate text-sm font-medium text-foreground">
+            {loan.books?.title ?? "Livre supprimé"}
+          </p>
+          {overdue && <OverdueBadge />}
+        </div>
         <p className="truncate text-xs text-muted-foreground">
           Emprunté par {loan.borrower_name} · {formatDate(loan.loan_date)}
         </p>
         {loan.expected_return_date && !loan.returned_at && (
-          <p className="text-xs text-loan">
+          <p className={cn("text-xs", overdue ? "font-medium text-destructive" : "text-loan")}>
             Retour prévu le {formatDate(loan.expected_return_date)}
           </p>
         )}
@@ -114,6 +120,17 @@ function LoanRow({ loan, onReturn }: { loan: LoanWithBook; onReturn?: () => void
         </Button>
       )}
     </div>
+  );
+}
+
+// Signal d'alerte neutre, distinct du tampon "Prêté" (--loan) : --destructive
+// est réservé au danger dans ce système (voir globals.css), jamais --accent
+// (doré) qui porte un tout autre sens (tags, notation, mise en avant).
+function OverdueBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-sm border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+      En retard
+    </span>
   );
 }
 
