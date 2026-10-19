@@ -99,15 +99,27 @@ function mapVolume(item: GoogleVolumeItem): GoogleBookResult | null {
   };
 }
 
-async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]> {
+async function fetchVolumesOnce(params: URLSearchParams): Promise<Response> {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
   if (apiKey) params.set("key", apiKey);
 
-  const res = await fetch(`${GOOGLE_BOOKS_API}?${params.toString()}`, {
+  return fetch(`${GOOGLE_BOOKS_API}?${params.toString()}`, {
     // Les résultats de recherche changent peu ; on peut les mettre en cache
     // brièvement côté edge/serveur.
     next: { revalidate: 60 * 60 },
   });
+}
+
+async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]> {
+  let res = await fetchVolumesOnce(new URLSearchParams(params));
+  // L'API Google Books renvoie de temps en temps une 5xx transitoire ("Service
+  // temporarily unavailable") sans rapport avec la requête elle-même — une
+  // seule nouvelle tentative suffit en pratique, pas la peine de faire
+  // attendre l'utilisateur plus que ça (pas de retry sur 4xx : une requête
+  // mal formée ou un quota dépassé ne se résout pas en réessayant).
+  if (!res.ok && res.status >= 500) {
+    res = await fetchVolumesOnce(new URLSearchParams(params));
+  }
 
   if (!res.ok) {
     throw new Error(`Google Books API a répondu ${res.status}`);
