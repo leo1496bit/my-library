@@ -49,6 +49,7 @@ describe("countByStatus", () => {
   it("returns zero counts for every status on empty input", () => {
     const result = countByStatus([]);
     expect(result).toEqual([
+      { key: "evaluating", label: "Sur la liste", count: 0 },
       { key: "to_buy", label: "À acheter", count: 0 },
       { key: "to_read", label: "À lire", count: 0 },
       { key: "reading", label: "En cours", count: 0 },
@@ -63,10 +64,12 @@ describe("countByStatus", () => {
       makeBook({ status: "finished" }),
       makeBook({ status: "reading" }),
       makeBook({ status: "to_buy" }),
+      makeBook({ status: "evaluating" }),
     ];
     const result = countByStatus(books);
-    expect(result.map((e) => e.count)).toEqual([1, 0, 1, 2, 0]);
+    expect(result.map((e) => e.count)).toEqual([1, 1, 0, 1, 2, 0]);
     expect(result.map((e) => e.key)).toEqual([
+      "evaluating",
       "to_buy",
       "to_read",
       "reading",

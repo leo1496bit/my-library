@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { BookText, ChevronLeft, ImagePlus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { deleteBook, fetchBookDetail, updateBook } from "@/lib/data/books";
 import { markLoanReturned } from "@/lib/data/loans";
+import { createOpinion, deleteOpinion, fetchOpinionsForBook } from "@/lib/data/opinions";
 import { createQuote, deleteQuote, fetchQuotesForBook } from "@/lib/data/quotes";
 import { NotFoundError } from "@/lib/data/errors";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,6 +51,7 @@ import {
   type BookFormat,
   type BookStatus,
   type Loan,
+  type Opinion,
   type Quote,
   type Tag,
 } from "@/lib/types";
@@ -66,6 +68,12 @@ export function BookDetail({ id }: { id: string }) {
   const [addingQuote, setAddingQuote] = useState(false);
   const [confirmDeleteQuoteId, setConfirmDeleteQuoteId] = useState<string | null>(null);
   const confirmResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [opinions, setOpinions] = useState<Opinion[]>([]);
+  const [opinionDraft, setOpinionDraft] = useState("");
+  const [opinionSourceDraft, setOpinionSourceDraft] = useState("");
+  const [addingOpinion, setAddingOpinion] = useState(false);
+  const [confirmDeleteOpinionId, setConfirmDeleteOpinionId] = useState<string | null>(null);
+  const confirmResetOpinionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -89,6 +97,10 @@ export function BookDetail({ id }: { id: string }) {
       if (!cancelled) setQuotes(data);
     });
 
+    fetchOpinionsForBook(id).then((data) => {
+      if (!cancelled) setOpinions(data);
+    });
+
     return () => {
       cancelled = true;
     };
@@ -97,6 +109,7 @@ export function BookDetail({ id }: { id: string }) {
   useEffect(() => {
     return () => {
       if (confirmResetTimer.current) clearTimeout(confirmResetTimer.current);
+      if (confirmResetOpinionTimer.current) clearTimeout(confirmResetOpinionTimer.current);
     };
   }, []);
 
@@ -283,6 +296,54 @@ export function BookDetail({ id }: { id: string }) {
       const message = err instanceof Error ? err.message : "Une erreur inattendue est survenue.";
       toast.error(message);
       if (!(err instanceof NotFoundError)) setQuotes(previous);
+    }
+  }
+
+  async function handleAddOpinion() {
+    const text = opinionDraft.trim();
+    if (!text || addingOpinion) return;
+    setAddingOpinion(true);
+    try {
+      const source = opinionSourceDraft.trim();
+      const opinion = await createOpinion({
+        book_id: id,
+        opinion_text: text,
+        source: source || null,
+      });
+      setOpinions((prev) => [opinion, ...prev]);
+      setOpinionDraft("");
+      setOpinionSourceDraft("");
+      toast.success("Avis ajouté.");
+    } catch {
+      toast.error("Cet avis n'a pas pu être enregistré.");
+    } finally {
+      setAddingOpinion(false);
+    }
+  }
+
+  // Même confirmation légère (deux clics) que pour les citations.
+  function handleRequestDeleteOpinion(opinionId: string) {
+    if (confirmDeleteOpinionId === opinionId) {
+      if (confirmResetOpinionTimer.current) clearTimeout(confirmResetOpinionTimer.current);
+      setConfirmDeleteOpinionId(null);
+      void handleDeleteOpinion(opinionId);
+      return;
+    }
+    setConfirmDeleteOpinionId(opinionId);
+    if (confirmResetOpinionTimer.current) clearTimeout(confirmResetOpinionTimer.current);
+    confirmResetOpinionTimer.current = setTimeout(() => setConfirmDeleteOpinionId(null), 3000);
+  }
+
+  async function handleDeleteOpinion(opinionId: string) {
+    const previous = opinions;
+    setOpinions((prev) => prev.filter((o) => o.id !== opinionId));
+    try {
+      await deleteOpinion(opinionId);
+      toast.success("Avis supprimé.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Une erreur inattendue est survenue.";
+      toast.error(message);
+      if (!(err instanceof NotFoundError)) setOpinions(previous);
     }
   }
 
@@ -525,6 +586,72 @@ export function BookDetail({ id }: { id: string }) {
               onClick={handleAddQuote}
               disabled={addingQuote || !quoteDraft.trim()}
               className="ml-auto"
+            >
+              Ajouter
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-medium text-foreground">Avis</h2>
+        {opinions.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {opinions.map((opinion) => (
+              <div
+                key={opinion.id}
+                className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground">{opinion.opinion_text}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {opinion.source && `${opinion.source} · `}
+                    {formatDate(opinion.created_at)}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={confirmDeleteOpinionId === opinion.id ? "destructive" : "ghost"}
+                  onClick={() => handleRequestDeleteOpinion(opinion.id)}
+                  aria-label={
+                    confirmDeleteOpinionId === opinion.id
+                      ? "Confirmer la suppression de l'avis"
+                      : "Supprimer l'avis"
+                  }
+                  className="shrink-0"
+                >
+                  {confirmDeleteOpinionId === opinion.id ? (
+                    "Confirmer ?"
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border px-3 py-2.5">
+          <Textarea
+            value={opinionDraft}
+            onChange={(e) => setOpinionDraft(e.target.value)}
+            placeholder="L'avis de quelqu'un sur ce livre…"
+            rows={2}
+            aria-label="Nouvel avis"
+          />
+          <div className="flex items-center gap-2">
+            <Input
+              value={opinionSourceDraft}
+              onChange={(e) => setOpinionSourceDraft(e.target.value)}
+              placeholder="Source (optionnel) : Marie, Critique Babelio…"
+              aria-label="Source de l'avis"
+              className="flex-1"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAddOpinion}
+              disabled={addingOpinion || !opinionDraft.trim()}
+              className="shrink-0"
             >
               Ajouter
             </Button>

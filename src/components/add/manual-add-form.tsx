@@ -22,7 +22,7 @@ import {
   type QuickAddStatus,
 } from "@/lib/types";
 
-const QUICK_STATUSES: QuickAddStatus[] = ["to_read", "to_buy", "reading"];
+const QUICK_STATUSES: QuickAddStatus[] = ["to_read", "to_buy", "reading", "evaluating"];
 
 export function ManualAddForm({
   initialTitle = "",

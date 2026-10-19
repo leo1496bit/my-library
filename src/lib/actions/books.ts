@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Book, BookStatus } from "@/lib/types";
 
-const QUICK_ADD_STATUSES: BookStatus[] = ["to_buy", "to_read", "reading"];
+const QUICK_ADD_STATUSES: BookStatus[] = ["evaluating", "to_buy", "to_read", "reading"];
 
 const newBookSchema = z.object({
   title: z.string().trim().min(1, "Le titre est obligatoire."),
@@ -18,7 +18,7 @@ const newBookSchema = z.object({
   language: z.string().trim().optional().nullable(),
   page_count: z.coerce.number().int().min(0).optional().nullable(),
   format: z.enum(["physical", "digital", "audio"]).default("physical"),
-  status: z.enum(["to_buy", "to_read", "reading"]).default("to_read"),
+  status: z.enum(["evaluating", "to_buy", "to_read", "reading"]).default("to_read"),
   google_books_id: z.string().trim().optional().nullable(),
   location: z.string().trim().optional().nullable(),
 });

@@ -3,6 +3,7 @@ import type { BookStatus } from "@/lib/types";
 // Classes Tailwind par statut — pastilles "fiche de catalogue", jamais la
 // seule porteuse de sens (toujours accompagnées du libellé en texte).
 export const STATUS_BADGE_CLASSES: Record<BookStatus, string> = {
+  evaluating: "bg-secondary text-secondary-foreground border-secondary-foreground/20",
   to_buy: "bg-muted text-muted-foreground border-border",
   to_read: "bg-accent/15 text-accent-foreground border-accent/30 dark:text-accent",
   reading: "bg-primary/12 text-primary border-primary/30",
