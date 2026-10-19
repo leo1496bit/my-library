@@ -110,14 +110,23 @@ async function fetchVolumesOnce(params: URLSearchParams): Promise<Response> {
   });
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]> {
   let res = await fetchVolumesOnce(new URLSearchParams(params));
-  // L'API Google Books renvoie de temps en temps une 5xx transitoire ("Service
-  // temporarily unavailable") sans rapport avec la requête elle-même — une
-  // seule nouvelle tentative suffit en pratique, pas la peine de faire
-  // attendre l'utilisateur plus que ça (pas de retry sur 4xx : une requête
-  // mal formée ou un quota dépassé ne se résout pas en réessayant).
-  if (!res.ok && res.status >= 500) {
+  // L'API Google Books connaît des épisodes d'instabilité où une bonne partie
+  // des appels renvoient une 5xx transitoire ("Service temporarily
+  // unavailable") sans rapport avec la requête elle-même — un taux de 50%
+  // d'échec a été mesuré en conditions réelles, donc une seule nouvelle
+  // tentative ne suffit pas à absorber ça de façon fiable (il faudrait encore
+  // ~25% d'échec résiduel). Jusqu'à 2 tentatives supplémentaires, avec un
+  // petit délai croissant pour laisser l'épisode se dissiper plutôt que de
+  // marteler un backend déjà en difficulté. Pas de retry sur 4xx : une requête
+  // mal formée ou un quota dépassé ne se résout pas en réessayant.
+  for (let attempt = 1; !res.ok && res.status >= 500 && attempt <= 2; attempt++) {
+    await sleep(attempt * 300);
     res = await fetchVolumesOnce(new URLSearchParams(params));
   }
 
