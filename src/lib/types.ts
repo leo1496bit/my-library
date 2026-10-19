@@ -1,12 +1,20 @@
 // Types partagés — reflètent le schéma Supabase défini dans
 // supabase/migrations/0001_init.sql.
 
-export const BOOK_STATUSES = ["to_buy", "to_read", "reading", "finished", "abandoned"] as const;
+export const BOOK_STATUSES = [
+  "evaluating",
+  "to_buy",
+  "to_read",
+  "reading",
+  "finished",
+  "abandoned",
+] as const;
 
 export type BookStatus = (typeof BOOK_STATUSES)[number];
 
 // Libellés et ordre d'affichage — modifiable ici sans toucher au reste du code.
 export const STATUS_LABELS: Record<BookStatus, string> = {
+  evaluating: "Sur la liste",
   to_buy: "À acheter",
   to_read: "À lire",
   reading: "En cours",
@@ -52,7 +60,7 @@ export interface Book {
 
 // Statuts proposés dans le flux d'ajout rapide (chips) — sous-ensemble de
 // BOOK_STATUSES, doit rester synchronisé avec le schéma de addBookAction.
-export type QuickAddStatus = Extract<BookStatus, "to_buy" | "to_read" | "reading">;
+export type QuickAddStatus = Extract<BookStatus, "evaluating" | "to_buy" | "to_read" | "reading">;
 
 export type BookInsert = Partial<Book> & { title: string };
 export type BookUpdate = Partial<Omit<Book, "id" | "user_id" | "created_at">>;
@@ -99,6 +107,18 @@ export interface Quote {
 export type QuoteInsert = Pick<Quote, "book_id" | "quote_text"> &
   Partial<Pick<Quote, "page_number">>;
 
+export interface Opinion {
+  id: string;
+  book_id: string;
+  user_id: string;
+  source: string | null;
+  opinion_text: string;
+  created_at: string;
+}
+
+export type OpinionInsert = Pick<Opinion, "book_id" | "opinion_text"> &
+  Partial<Pick<Opinion, "source">>;
+
 // Livre avec ses relations chargées côté client (prêt actif, tags).
 export interface BookWithRelations extends Book {
   active_loan?: Loan | null;
@@ -115,6 +135,12 @@ export interface Profile {
 // Colonnes renvoyées par les fonctions publiques get_shared_book(s) — sans
 // notes ni location (vie privée), voir supabase/migrations/0006_public_book_details_and_stats.sql
 // et 0008_add_series_fields.sql (series_name/series_index, même logique que genre/author).
+// `status` partage le même type `BookStatus` que `Book` (pas de type dédié),
+// mais ne contient jamais `evaluating` en pratique : get_shared_books/
+// get_shared_book filtrent ces livres côté base (voir
+// supabase/migrations/0013_exclude_evaluating_from_sharing_and_add_opinions.sql)
+// — un livre "Sur la liste" est une réflexion privée avant achat, jamais
+// exposée sur /u/[slug].
 export interface SharedBook {
   id: string;
   user_id: string;
