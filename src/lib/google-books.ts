@@ -114,8 +114,30 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// DIAGNOSTIC TEMPORAIRE : trace chaque tentative (code, durée, raison Google,
+// région Vercel) pour comprendre pourquoi les 5xx persistent en production
+// malgré les nouvelles tentatives, alors qu'elles suffisent en local. À
+// retirer une fois la cause identifiée.
+async function fetchVolumesOnceLogged(
+  params: URLSearchParams,
+  attempt: number,
+): Promise<Response> {
+  const started = Date.now();
+  const res = await fetchVolumesOnce(params);
+  let reason = "";
+  if (!res.ok) {
+    reason = (await res.clone().text()).match(/"reason":\s*"([^"]+)"/)?.[1] ?? "";
+  }
+  console.log(
+    `[google-books] attempt=${attempt} status=${res.status} ms=${Date.now() - started}` +
+      ` reason=${reason || "-"} region=${process.env.VERCEL_REGION ?? "local"}` +
+      ` q=${JSON.stringify(params.get("q"))}`,
+  );
+  return res;
+}
+
 async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]> {
-  let res = await fetchVolumesOnce(new URLSearchParams(params));
+  let res = await fetchVolumesOnceLogged(new URLSearchParams(params), 0);
   // L'API Google Books connaît des épisodes d'instabilité où une bonne partie
   // des appels renvoient une 5xx transitoire ("Service temporarily
   // unavailable") sans rapport avec la requête elle-même — un taux de 50%
@@ -127,7 +149,7 @@ async function fetchVolumes(params: URLSearchParams): Promise<GoogleBookResult[]
   // mal formée ou un quota dépassé ne se résout pas en réessayant.
   for (let attempt = 1; !res.ok && res.status >= 500 && attempt <= 2; attempt++) {
     await sleep(attempt * 300);
-    res = await fetchVolumesOnce(new URLSearchParams(params));
+    res = await fetchVolumesOnceLogged(new URLSearchParams(params), attempt);
   }
 
   if (!res.ok) {
