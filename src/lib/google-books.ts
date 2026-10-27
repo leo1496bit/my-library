@@ -8,6 +8,9 @@ const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
 
 export interface GoogleBookResult {
   googleBooksId: string;
+  // Absent pour un résultat Google Books ; "openlibrary" quand la recherche
+  // a basculé sur la source de secours (voir open-library.ts).
+  source?: "openlibrary";
   title: string;
   author: string | null;
   genre: string | null;
@@ -38,6 +41,14 @@ interface GoogleVolumeItem {
       smallThumbnail?: string;
     };
   };
+}
+
+// Valeur à enregistrer dans `books.google_books_id` : l'identifiant Google
+// d'un résultat Google Books, rien pour un résultat Open Library (son
+// identifiant fausserait le dédoublonnage des recommandations, qui compare
+// ce champ à des identifiants Google).
+export function googleBooksIdOf(result: GoogleBookResult): string | null {
+  return result.source === "openlibrary" ? null : result.googleBooksId;
 }
 
 export function upgradeCoverUrl(url: string | undefined): string | null {
