@@ -44,7 +44,7 @@ import { LoanBadge } from "@/components/books/loan-badge";
 import { LoanDialog } from "@/components/loans/loan-dialog";
 import { GoogleBookMatchDialog } from "@/components/books/google-book-match-dialog";
 import { formatDate } from "@/lib/format";
-import type { GoogleBookResult } from "@/lib/google-books";
+import { googleBooksIdOf, type GoogleBookResult } from "@/lib/google-books";
 import {
   FORMAT_LABELS,
   type Book,
@@ -209,10 +209,15 @@ export function BookDetail({ id }: { id: string }) {
       published_year: result.publishedYear,
       language: result.language,
       page_count: result.pageCount,
-      google_books_id: result.googleBooksId,
+      google_books_id: googleBooksIdOf(result),
     };
     if (result.coverUrl) patch.cover_url = result.coverUrl;
-    await saveFields(patch, "Détails mis à jour depuis Google Books.");
+    await saveFields(
+      patch,
+      result.source === "openlibrary"
+        ? "Détails mis à jour depuis Open Library."
+        : "Détails mis à jour depuis Google Books.",
+    );
   }
 
   async function handleReturned(loan: Loan) {

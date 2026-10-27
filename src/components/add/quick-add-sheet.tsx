@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { BookText, ChevronLeft, Loader2, Plus, SearchX, X } from "lucide-react";
+import { BookText, ChevronLeft, Loader2, Plus, RotateCw, SearchX, X } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -23,7 +23,7 @@ import { attachTags, fetchAllTags } from "@/lib/data/tags";
 import { suggestTagsForBook } from "@/lib/tag-suggestions";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type QuickAddStatus, type Tag } from "@/lib/types";
-import type { GoogleBookResult } from "@/lib/google-books";
+import { googleBooksIdOf, type GoogleBookResult } from "@/lib/google-books";
 
 type Step = "search" | "confirm" | "manual";
 
@@ -38,6 +38,9 @@ export function QuickAddSheet() {
   const [results, setResults] = useState<GoogleBookResult[] | null>(null);
   const [completedQuery, setCompletedQuery] = useState<string | null>(null);
   const [searchFailed, setSearchFailed] = useState(false);
+  // Incrémenté par "Réessayer" pour relancer la même requête sans que
+  // l'utilisateur ait à modifier sa saisie.
+  const [retryCount, setRetryCount] = useState(0);
 
   const [selected, setSelected] = useState<GoogleBookResult | null>(null);
   const [status, setStatus] = useState<QuickAddStatus>("to_read");
@@ -108,7 +111,15 @@ export function QuickAddSheet() {
       .finally(() => setCompletedQuery(trimmedQuery));
 
     return () => controller.abort();
-  }, [trimmedQuery]);
+  }, [trimmedQuery, retryCount]);
+
+  function handleRetry() {
+    // Remettre completedQuery à null réaffiche les squelettes de chargement
+    // (voir `searching`) pendant la nouvelle tentative.
+    setCompletedQuery(null);
+    setSearchFailed(false);
+    setRetryCount((n) => n + 1);
+  }
 
   function handleSelect(result: GoogleBookResult) {
     setSelected(result);
@@ -156,7 +167,7 @@ export function QuickAddSheet() {
         page_count: selected.pageCount,
         format: "physical",
         status,
-        google_books_id: selected.googleBooksId,
+        google_books_id: googleBooksIdOf(selected),
         location: null,
       });
       if (result.error || !result.book) {
@@ -245,6 +256,12 @@ export function QuickAddSheet() {
                         ? "Recherche indisponible pour le moment."
                         : "Aucun résultat pour cette recherche."}
                     </p>
+                    {searchFailed && (
+                      <Button type="button" variant="outline" size="sm" onClick={handleRetry}>
+                        <RotateCw className="size-3.5" />
+                        Réessayer
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
